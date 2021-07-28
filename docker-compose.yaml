@@ -1,0 +1,37 @@
+version: "3.9"
+services:
+  user-microservice-t:
+    build: .
+    ports:
+      - 8081:8080
+    volumes: 
+      - ./src:/go/src/users-microservice-t
+  pgdb:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - 5433:5432
+    networks: 
+      - pgnet
+    volumes: 
+      - pgdata:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4
+    ports: 
+      - 8082:80
+    restart: always  
+    environment: 
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    networks: 
+      - pgnet
+    volumes: 
+      - pgadmindata:/var/lib/postgresql/data
+networks: 
+  pgnet:
+    driver: bridge
+volumes: 
+  pgdata:
+  pgadmindata: 
