@@ -1,9 +1,0 @@
-FROM golang:1.16.5-buster AS builder
-ENV APP_HOME /go/src/user-microservice-t
-WORKDIR $APP_HOME
-COPY ./src .
-RUN GOOS=linux GOARCH=amd64 go build -o /out/user-microservice-t
-
-FROM scratch
-COPY --from=builder /out/user-microservice-t /out/
-CMD ["/out/user-microservice-t"]
