@@ -1,0 +1,2 @@
+docker build -f Dockerfile.develop -t user_microservice_t_dev .
+docker run -it -p 8081:8080 --network=user_microservice_t_appnet -v $PWD/src:/go/src/github.com/alidevjimmy/user_microservice_t user_microservice_t_dev:latest

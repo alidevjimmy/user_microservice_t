@@ -1,6 +1,8 @@
 package app
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+)
 
 var (
 	e *echo.Echo

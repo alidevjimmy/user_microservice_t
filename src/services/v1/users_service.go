@@ -5,7 +5,7 @@ import (
 	"github.com/alidevjimmy/user_microservice_t/domains/v1/users"
 )
 
-var(
+var (
 	UserService userServiceInterface = &userSerive{}
 )
 
@@ -19,7 +19,7 @@ type userServiceInterface interface {
 	EditUser(body users.EditUserRequest) rest_errors.RestErr
 }
 
-type userSerive struct {}
+type userSerive struct{}
 
 func (*userSerive) Register(body users.RegisterRequest) (*users.RegisterResponse, rest_errors.RestErr) {
 	// validate
@@ -27,21 +27,21 @@ func (*userSerive) Register(body users.RegisterRequest) (*users.RegisterResponse
 	// send verification code
 	// get jwt code
 	// return true data
-	return nil,nil
+	return nil, nil
 }
 
 func (*userSerive) Login(body users.LoginRequest) (*users.LoginResponse, rest_errors.RestErr) {
-	return nil,nil
+	return nil, nil
 }
 
 // GetUser returns single user by its jwt token
 func (*userSerive) GetUser(token string) (*users.User, rest_errors.RestErr) {
-	return nil,nil
+	return nil, nil
 }
 
 // GetUsers returns all users by filter
 func (*userSerive) GetUsers(params interface{}) ([]users.User, rest_errors.RestErr) {
-	return nil,nil
+	return nil, nil
 }
 
 // ToggleActiveUser makes state of active field of user opposite
@@ -57,5 +57,3 @@ func (*userSerive) ToggleBlockUser(userId int) rest_errors.RestErr {
 func (*userSerive) EditUser(body users.EditUserRequest) rest_errors.RestErr {
 	return nil
 }
-
-

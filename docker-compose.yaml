@@ -1,16 +1,14 @@
 version: "3.9"
 services:
-  user-microservice-t:
-    build:
-      dockerfile: docker-compose.yaml
-      context: .
-    ports:
-      - 8081:8080
-    volumes:
-      - ./src:/app/src/github.com/alidevjimmy/user_microservice_t/src
+#  user-microservice-t:
+#    build: .
+#    ports:
+#      - 8081:8080
+#    volumes:
+#      - ./src:/app/src/github.com/alidevjimmy/user_microservice_t/src
 #    restart: always
-    networks:
-      - appnet
+#    networks:
+#      - appnet
   pgdb:
     image: postgres
 #    restart: always
