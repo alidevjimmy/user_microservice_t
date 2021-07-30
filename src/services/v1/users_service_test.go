@@ -56,7 +56,7 @@ func TestRegisterPasswordRequired(t *testing.T) {
 }
 
 func TestRegisterCanInsertDuplicatedPhone(t *testing.T) {
-	// TODO: database mock
+
 }
 
 func TestRegisterCanInsertDuplicatedUsername(t *testing.T) {

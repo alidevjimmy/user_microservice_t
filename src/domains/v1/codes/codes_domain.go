@@ -1,15 +1,19 @@
 package codes
 
-import "time"
+import (
+	"gorm.io/gorm"
+)
 
 type (
 	Code struct {
-		Id             int       `json:"id"`
-		UserID         int       `json:"user_id"`
-		Code           string    `json:"code"`
-		CodeExpiration string    `json:"code_expiration"`
-		CreatedAt      string    `json:"created_at"`
-		UpdatedAt      time.Time `json:"updated_at"`
-		DeletedAt      time.Time `json:"deleted_at"`
+		gorm.Model
+		UserID         int    `json:"user_id"`
+		Code           string `json:"code"`
+		CodeExpiration string `json:"code_expiration"`
+		CreatedAt      string `json:"created_at"`
 	}
 )
+
+func (c *Code) TableName() string {
+	return "codes"
+}

@@ -1,10 +1,9 @@
 package users
 
 import (
-	"time"
-
 	"github.com/alidevjimmy/go-rest-utils/rest_errors"
 	"github.com/go-playground/validator/v10"
+	"gorm.io/gorm"
 )
 
 type (
@@ -13,19 +12,16 @@ type (
 	}
 
 	User struct {
-		ID        uint      `json:"id" gorm:"primaryKey"`
-		Phone     string    `json:"phone"`
-		Username  string    `json:"username"`
-		Name      string    `json:"name"`
-		Family    string    `json:"family"`
-		Age       uint      `json:"age"`
-		Active    bool      `json:"active"`
-		Blocked   bool      `json:"blocked"`
-		Password  bool      `json:"password"`
-		IsAdmin   bool      `json:"is_admin"`
-		CreatedAt time.Time `json:"created_at"`
-		UpdatedAt time.Time `json:"updated_at"`
-		DeletedAt time.Time `json:"deleted_at"`
+		gorm.Model
+		Phone    string `json:"phone" gorm:"column:phone"`
+		Username string `json:"username" gorm:"column:username"`
+		Name     string `json:"name" gorm:"column:name"`
+		Family   string `json:"family" gorm:"column:family"`
+		Age      uint   `json:"age" gorm:"column:age"`
+		Active   bool   `json:"active" gorm:"column:active"`
+		Blocked  bool   `json:"blocked" gorm:"column:blocked"`
+		Password bool   `json:"password" gorm:"column:password"`
+		IsAdmin  bool   `json:"is_admin" gorm:"column:is_admin"`
 	}
 
 	RegisterRequest struct {
@@ -65,4 +61,8 @@ func (uv *UserValidator) Validate(i interface{}) error {
 	}
 
 	return nil
+}
+
+func (u *User) TableName() string {
+	return "users"
 }
