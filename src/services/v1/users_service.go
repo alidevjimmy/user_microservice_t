@@ -1,4 +1,4 @@
-package v1
+package services
 
 import (
 	"github.com/alidevjimmy/go-rest-utils/rest_errors"
@@ -8,6 +8,7 @@ import (
 var (
 	UserService userServiceInterface = &userSerive{}
 )
+
 
 type userServiceInterface interface {
 	Register(body users.RegisterRequest) (*users.RegisterResponse, rest_errors.RestErr)
@@ -22,11 +23,7 @@ type userServiceInterface interface {
 type userSerive struct{}
 
 func (*userSerive) Register(body users.RegisterRequest) (*users.RegisterResponse, rest_errors.RestErr) {
-	// validate
-	// check unique fields
-	// send verification code
-	// get jwt code
-	// return true data
+	// check username only can contain _ and english words
 	return nil, nil
 }
 

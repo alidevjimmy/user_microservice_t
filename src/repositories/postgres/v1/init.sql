@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users
     is_admin   BOOL         NOT NULL DEFAULT (FALSE),
     created_at TIMESTAMP    NOT NULL DEFAULT now(),
     updated_at TIMESTAMP    NOT NULL DEFAULT now(),
-    deleted_at TIMESTAMP    NOT NULL
+    deleted_at TIMESTAMP    
 );
 
 CREATE TYPE code_purposes AS ENUM ('RESET_PASSWORD','ACTIVATION');

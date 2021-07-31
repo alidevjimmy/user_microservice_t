@@ -20,7 +20,7 @@ type (
 		Age      uint   `json:"age" gorm:"column:age"`
 		Active   bool   `json:"active" gorm:"column:active"`
 		Blocked  bool   `json:"blocked" gorm:"column:blocked"`
-		Password bool   `json:"password" gorm:"column:password"`
+		Password bool   `gorm:"column:password"`
 		IsAdmin  bool   `json:"is_admin" gorm:"column:is_admin"`
 	}
 
@@ -34,8 +34,8 @@ type (
 	}
 
 	LoginRequest struct {
-		PhoneOrUsername string `json:"phone" validate:"required"`
-		Password        string `json:"password" validate:"required"`
+		PhoneOrUsername string `json:"phone" validate:"required,max=50"`
+		Password        string `json:"password" validate:"required,max=300"`
 	}
 
 	RegisterResponse struct {
