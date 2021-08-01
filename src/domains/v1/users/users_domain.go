@@ -24,6 +24,18 @@ type (
 		IsAdmin  bool   `json:"is_admin" gorm:"column:is_admin"`
 	}
 
+	PublicUser struct {
+		ID       uint   `json:"id"`
+		Phone    string `json:"phone"`
+		Username string `json:"username"`
+		Name     string `json:"name"`
+		Family   string `json:"family"`
+		Age      uint   `json:"age"`
+		Active   bool   `json:"active"`
+		Blocked  bool   `json:"blocked"`
+		IsAdmin  bool   `json:"is_admin"`
+	}
+
 	RegisterRequest struct {
 		Phone    string `json:"phone" validate:"required,max=12"`
 		Username string `json:"username" validate:"required,max=250"`

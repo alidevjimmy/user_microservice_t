@@ -1,4 +1,4 @@
-package services
+package codes
 
 import "github.com/alidevjimmy/go-rest-utils/rest_errors"
 

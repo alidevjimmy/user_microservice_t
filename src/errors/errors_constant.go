@@ -12,4 +12,5 @@ const (
 	PasswordIsRequiredErrorMessage = "رمز عبور است"
 	UsernameOnlyCanContainUnderlineAndEnglishWordsAndNumbersErrorMessage = "نام کاربری فقط می‌تواند شامل حروف انگلیسی، عدد و خط تیره باشه"
 	PhoneOrUsernameIsRequiredErrorMessage = "نام کاربری یا شماره تماس اجباری است"
+	UserNotFoundError = "کاربر یافت نشد"
 )
