@@ -9,18 +9,19 @@ import (
 type jwtService struct{}
 
 type jwtInterface interface {
-	Generate(data jwt.MapClaims) (string, rest_errors.RestErr)
-	Verify(token string) (*domains.Jwt, bool, rest_errors.RestErr)
+	GenerateJwtToken(data jwt.MapClaims) (string, rest_errors.RestErr)
+	VerifyJwtToken(token string) (*domains.Jwt, bool, rest_errors.RestErr)
 }
 
 var (
 	JwtService jwtInterface = &jwtService{}
 )
 
-func (*jwtService) Generate(data jwt.MapClaims) (string, rest_errors.RestErr) {
+func (*jwtService) GenerateJwtToken(data jwt.MapClaims) (string, rest_errors.RestErr) {
+
 	return "", nil
 }
 
-func (*jwtService) Verify(token string) (*domains.Jwt, bool, rest_errors.RestErr) {
+func (*jwtService) VerifyJwtToken(token string) (*domains.Jwt, bool, rest_errors.RestErr) {
 	return nil, false, nil
 }
