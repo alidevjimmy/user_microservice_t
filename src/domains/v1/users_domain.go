@@ -1,4 +1,4 @@
-package users
+package domains
 
 import (
 	"github.com/alidevjimmy/go-rest-utils/rest_errors"
@@ -58,7 +58,7 @@ type (
 		Token string `json:"token"`
 	}
 
-	EditUserRequest struct {
+	UpdateUserRequest struct {
 		Username string `json:"username" validate:"required"`
 		Name     string `json:"name" validate:"required"`
 		Family   string `json:"family" validate:"required"`

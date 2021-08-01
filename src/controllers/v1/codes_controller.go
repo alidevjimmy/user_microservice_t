@@ -1,4 +1,4 @@
-package codes
+package controllers
 
 import "github.com/labstack/echo/v4"
 

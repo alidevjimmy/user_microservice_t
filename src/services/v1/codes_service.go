@@ -1,11 +1,10 @@
-package codes
+package services
 
 import "github.com/alidevjimmy/go-rest-utils/rest_errors"
 
 var (
 	CodeService codeServiceInterface = &codeService{}
 )
-
 
 type codeServiceInterface interface {
 	Send(phone string) rest_errors.RestErr

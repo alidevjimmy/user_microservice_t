@@ -1,4 +1,4 @@
-package codes
+package domains
 
 import (
 	"gorm.io/gorm"
@@ -8,7 +8,7 @@ type (
 	Code struct {
 		gorm.Model
 		UserID         int    `json:"user_id"`
-		Code           int `json:"code"`
+		Code           int    `json:"code"`
 		CodeExpiration string `json:"code_expiration"`
 		CreatedAt      string `json:"created_at"`
 	}

@@ -1,6 +1,8 @@
-package users
+package controllers
 
 import "github.com/labstack/echo/v4"
+
+// TODO: impelement controller with interace
 
 // Register is controller for adding new users
 func Register(c echo.Context) error {
