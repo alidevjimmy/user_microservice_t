@@ -48,17 +48,17 @@ type Suite struct {
 
 type JwtServiceMock struct{}
 
-func (*JwtServiceMock) Generate(data jwt.MapClaims) (string, rest_errors.RestErr) {
+func (*JwtServiceMock) GenerateJwtToken(data jwt.MapClaims) (string, rest_errors.RestErr) {
 	return generateJwtFunc(data)
 }
 
-func (*JwtServiceMock) Verify(token string) (*domains.Jwt, bool, rest_errors.RestErr) {
+func (*JwtServiceMock) VerifyJwtToken(token string) (*domains.Jwt, bool, rest_errors.RestErr) {
 	return verifyJwtFunc(token)
 }
 
 type CodeServiceMock struct{}
 
-func (*CodeServiceMock) Send(phone string) rest_errors.RestErr {
+func (*CodeServiceMock) Send(phone string , reason int) rest_errors.RestErr {
 	return sendCodeFunc(phone)
 }
 
@@ -371,8 +371,8 @@ func TestGetUserFailToVerifyToken(t *testing.T) {
 func TestGetUserFailToGetDataFromRepository(t *testing.T) {
 	verifyJwtFunc = func(token string) (*domains.Jwt, bool, rest_errors.RestErr) {
 		return &domains.Jwt{
-			Header:  domains.JwtHeader{Alg: "HS256", Typ: "JWT"},
-			Payload: domains.JwtPayload{Sub: "1", Exp: time.Time{}},
+			Sub: "1",
+			Exp: time.Now().Add(time.Hour),
 		}, true, nil
 	}
 	JwtService = &JwtServiceMock{}
@@ -394,8 +394,8 @@ func TestGetUserFailToGetDataFromRepository(t *testing.T) {
 func TestGetUserSuccessfully(t *testing.T) {
 	verifyJwtFunc = func(token string) (*domains.Jwt, bool, rest_errors.RestErr) {
 		return &domains.Jwt{
-			Header:  domains.JwtHeader{Alg: "HS256", Typ: "JWT"},
-			Payload: domains.JwtPayload{Sub: "1", Exp: time.Time{}},
+			Sub: "1",
+			Exp: time.Now().Add(time.Hour),
 		}, true, nil
 	}
 

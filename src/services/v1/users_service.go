@@ -52,3 +52,8 @@ func (*userSerive) UpdateUserBlockState(userId uint) (*domains.PublicUser, rest_
 func (*userSerive) UpdateUser(userId uint, body domains.UpdateUserRequest) (*domains.PublicUser, rest_errors.RestErr) {
 	return nil, nil
 }
+
+
+//func (*userSerive) ChangeForgotPassword(phone string, code int) (*domains.PublicUser, rest_errors.RestErr) {
+//	return nil, nil
+//}

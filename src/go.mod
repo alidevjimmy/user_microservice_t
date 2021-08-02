@@ -8,6 +8,8 @@ require (
 	github.com/go-playground/validator/v10 v10.8.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/jackc/pgx/v4 v4.13.0 // indirect
+	github.com/jarcoal/httpmock v1.0.8 // indirect
+	github.com/kavenegar/kavenegar-go v0.0.0-20200629080648-6e28263b7162 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/labstack/echo/v4 v4.4.0
 	github.com/mattn/go-isatty v0.0.13 // indirect
