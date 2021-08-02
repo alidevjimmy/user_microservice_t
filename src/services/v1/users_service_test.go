@@ -592,7 +592,7 @@ func TestChangePasswordFailToUpdatePassword(t *testing.T) {
 	updatePasswordByPhoneFunc = func(newPass, phone string) (*domains.PublicUser, rest_errors.RestErr) {
 		return nil, rest_errors.NewInternalServerError(errors.InternalServerErrorMessage, nil)
 	}
-
+	repositories.UserRepository = &UserRespositoryMock{}
 	u, err := UserService.ChangeForgotPassword("new pass", registerRequest.Phone, 123123)
 	assert.NotNil(t, err)
 	assert.Nil(t, u)
@@ -610,6 +610,8 @@ func TestChangePasswordSuccessfully(t *testing.T) {
 	updatePasswordByPhoneFunc = func(newPass, phone string) (*domains.PublicUser, rest_errors.RestErr) {
 		return &domains.PublicUser{}, nil
 	}
+
+	repositories.UserRepository = &UserRespositoryMock{}
 
 	u, err := UserService.ChangeForgotPassword("new pass", registerRequest.Phone, 123123)
 	assert.Nil(t, err)
@@ -640,7 +642,7 @@ func TestActiveUserFailToUpdate(t *testing.T) {
 	updateUserActiveStateByPhoneFunc = func(phone string) (*domains.PublicUser, rest_errors.RestErr) {
 		return nil, nil
 	}
-
+	repositories.UserRepository = &UserRespositoryMock{}
 	u, err := UserService.ActiveUser(registerRequest.Phone, 123123)
 	assert.NotNil(t, err)
 	assert.Nil(t, u)
@@ -658,6 +660,9 @@ func TestActiveUserSuccessfully(t *testing.T) {
 	updateUserActiveStateByPhoneFunc = func(phone string) (*domains.PublicUser, rest_errors.RestErr) {
 		return &domains.PublicUser{}, nil
 	}
+
+	repositories.UserRepository = &UserRespositoryMock{}
+
 	u, err := UserService.ActiveUser(registerRequest.Phone, 123123)
 	assert.Nil(t, err)
 	assert.NotNil(t, u)
