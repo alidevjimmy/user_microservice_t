@@ -65,6 +65,7 @@ type (
 		Age      uint   `json:"age" validate:"required"`
 		Password string `json:"password" validate:"required"`
 	}
+
 )
 
 func (uv *UserValidator) Validate(i interface{}) error {

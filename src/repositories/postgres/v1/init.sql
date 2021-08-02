@@ -20,10 +20,10 @@ CREATE TYPE code_purposes AS ENUM ('RESET_PASSWORD','ACTIVATION');
 CREATE TABLE IF NOT EXISTS verification_codes
 (
     id              SERIAL PRIMARY KEY,
-    user_id         INT           NOT NULL,
+    phone         INT           NOT NULL,
     code            INT           NOT NULL,
     code_purpose    code_purposes NOT NULL,
     expiration_time TIMESTAMP     NOT NULL,
     created_at      TIMESTAMP     NOT NULL DEFAULT now(),
-    CONSTRAINT users_user_id_fkey FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    CONSTRAINT users_phone_fkey FOREIGN KEY (phone) REFERENCES users (phone) ON DELETE CASCADE
 );

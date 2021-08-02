@@ -28,3 +28,7 @@ func BlockUser(c echo.Context) error {
 func EditUser(c echo.Context) error {
 	return c.JSON(200, "you are not registered!")
 }
+
+func ChangePassword(c echo.Context) error {
+	return c.JSON(200, "you are not registered!")
+}

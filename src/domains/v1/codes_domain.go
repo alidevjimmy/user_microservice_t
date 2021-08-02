@@ -2,15 +2,16 @@ package domains
 
 import (
 	"gorm.io/gorm"
+	"time"
 )
 
 type (
 	Code struct {
 		gorm.Model
-		UserID         int    `json:"user_id"`
+		Phone          string `json:"phone"`
 		Code           int    `json:"code"`
-		CodeExpiration string `json:"code_expiration"`
-		CreatedAt      string `json:"created_at"`
+		CodePurpose     int `json:"code_purpose"`
+		CodeExpiration time.Time `json:"code_expiration"`
 	}
 )
 

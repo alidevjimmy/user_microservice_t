@@ -17,6 +17,8 @@ type userServiceInterface interface {
 	UpdateUserActiveState(userId uint) (*domains.PublicUser, rest_errors.RestErr)
 	UpdateUserBlockState(userId uint) (*domains.PublicUser, rest_errors.RestErr)
 	UpdateUser(userId uint, body domains.UpdateUserRequest) (*domains.PublicUser, rest_errors.RestErr)
+	ChangeForgotPassword(newPassword , phone string, code int) (*domains.PublicUser, rest_errors.RestErr)
+	ActiveUser(phone string, code int) (*domains.PublicUser, rest_errors.RestErr)
 }
 
 type userSerive struct{}
@@ -53,7 +55,11 @@ func (*userSerive) UpdateUser(userId uint, body domains.UpdateUserRequest) (*dom
 	return nil, nil
 }
 
-
-//func (*userSerive) ChangeForgotPassword(phone string, code int) (*domains.PublicUser, rest_errors.RestErr) {
-//	return nil, nil
-//}
+// ChangeForgotPassword helps people who forgot their password using verification code
+func (*userSerive) ChangeForgotPassword(newPassword , phone string, code int) (*domains.PublicUser, rest_errors.RestErr) {
+	return nil, nil
+}
+// ActiveUser Change user active state to true using verification code
+func (*userSerive) ActiveUser(phone string, code int) (*domains.PublicUser, rest_errors.RestErr) {
+	return nil, nil
+}

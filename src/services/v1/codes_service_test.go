@@ -8,12 +8,25 @@ import (
 	"github.com/alidevjimmy/user_microservice_t/repositories/postgres/v1"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 	"net/http"
 	"os"
 	"testing"
+	"time"
 )
 
 
+var (
+	findCodeFunc func(phone string , code , reason int) (*domains.Code , rest_errors.RestErr)
+)
+
+type CodeRepoMock struct {
+	DB *gorm.DB
+}
+
+func (c *CodeRepoMock) FindCode(phone string , code , reason int) (*domains.Code, rest_errors.RestErr) {
+	return findCodeFunc(phone , code , reason)
+}
 
 func TestSendCodeFailToGetDataFromRepo(t *testing.T) {
 	getUserFunc = func(userId uint) (*domains.PublicUser, rest_errors.RestErr) {
@@ -51,7 +64,7 @@ func TestSendCodeToActiveUser(t *testing.T) {
 
 	err := CodeService.Send(registerRequest.Phone , 0)
 	assert.NotNil(t, err)
-	assert.Equal(t, errors.UserAlreadyActive , err.Message())
+	assert.Equal(t, errors.UserAlreadyActiveErrorMessage , err.Message())
 	assert.Equal(t, http.StatusBadRequest, err.Status())
 }
 
@@ -146,4 +159,79 @@ func TestSendForgetPasswordCodeSuccessfully(t *testing.T) {
 
 	err := CodeService.Send(registerRequest.Phone,1)
 	assert.Nil(t, err)
+}
+
+
+func TestVerifyCodeFailToGetDataFromRepo(t *testing.T) {
+	findCodeFunc = func(phone string , code , reason int) (*domains.Code, rest_errors.RestErr) {
+		return nil , rest_errors.NewInternalServerError(errors.InternalServerErrorMessage,nil)
+	}
+	repositories.CodeRepository = &CodeRepoMock{}
+
+	ok , err := CodeService.Verify(registerRequest.Phone ,23233, 0)
+	assert.NotNil(t, err)
+	assert.Equal(t, false , ok)
+	assert.Equal(t, errors.InternalServerErrorMessage , err.Message())
+	assert.Equal(t, http.StatusInternalServerError, err.Status())
+}
+
+func TestVerifyCodeNotFound(t *testing.T) {
+	findCodeFunc = func(phone string , code , reason int) (*domains.Code, rest_errors.RestErr) {
+		return nil , nil
+	}
+	repositories.CodeRepository = &CodeRepoMock{}
+
+	ok , err := CodeService.Verify(registerRequest.Phone ,23233, 0)
+	assert.NotNil(t, err)
+	assert.Equal(t, false , ok)
+	assert.Equal(t, errors.UserNotFoundError , err.Message())
+	assert.Equal(t, http.NotFound, err.Status())
+}
+
+func TestVerifyCodeSuccessfully(t *testing.T) {
+	findCodeFunc = func(phone string , code , reason int) (*domains.Code, rest_errors.RestErr) {
+		return &domains.Code{
+			Code: 2313123,
+			Phone: "09231212",
+			CodeExpiration: time.Unix(0, time.Now().UnixNano() + 10000),
+			CodePurpose: 0,
+		} , nil
+	}
+	repositories.CodeRepository = &CodeRepoMock{}
+
+	ok , err := CodeService.Verify(registerRequest.Phone ,23233, 0)
+	assert.Nil(t, err)
+	assert.Equal(t, true , ok)
+}
+
+
+func TestIsExpired(t *testing.T) {
+	e := time.Unix(0, time.Now().UnixNano() - 1000)
+	expired := IsExpired(e)
+	assert.Equal(t, expired, true)
+}
+
+func TestIsNotExpired(t *testing.T) {
+	e := time.Unix(0, time.Now().UnixNano() + 10000)
+	expired := IsExpired(e)
+	assert.Equal(t, expired, false)
+}
+
+func TestVerificationCodeIsExpired(t *testing.T) {
+	findCodeFunc = func(phone string , code , reason int) (*domains.Code, rest_errors.RestErr) {
+		return &domains.Code{
+			Code: 2313123,
+			Phone: "09231212",
+			CodeExpiration: time.Unix(0, time.Now().UnixNano() - 10000),
+			CodePurpose: 0,
+		} , nil
+	}
+	repositories.CodeRepository = &CodeRepoMock{}
+
+	ok , err := CodeService.Verify(registerRequest.Phone ,23233, 0)
+
+	assert.Nil(t, err)
+	assert.Equal(t, false , ok)
+	assert.Equal(t, errors.CodeIsExpiredErrorMessage , err.Message())
+	assert.Equal(t, http.StatusBadRequest, err.Status())
 }

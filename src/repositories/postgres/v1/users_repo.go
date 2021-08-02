@@ -26,18 +26,16 @@ type userRepositoryInterface interface {
 	GetUserByPhone(phone string) (*domains.PublicUser, rest_errors.RestErr)
 	GetUserByUsername(username string) (*domains.PublicUser, rest_errors.RestErr)
 	GetUserByPhoneOrUsernameAndPassword(pou, password string) (*domains.User, rest_errors.RestErr)
-	UpdateActiveState(userId uint) (*domains.PublicUser, rest_errors.RestErr)
+	UpdateUser(userId uint, body domains.UpdateUserRequest) (*domains.PublicUser, rest_errors.RestErr)
+	UpdatePasswordByPhone(newPass , phone string) (*domains.PublicUser, rest_errors.RestErr)
+	UpdateActiveStateByPhone(phone string) (*domains.PublicUser, rest_errors.RestErr)
+	UpdateActiveStateById(userId uint) (*domains.PublicUser, rest_errors.RestErr)
 }
 
 func NewUserRepository(db *gorm.DB) *userRepository {
 	return &userRepository{DB: db}
 }
 
-// func GetUsers(// map for filter res) ([]users.User, rest_errors.RestErr) {
-// 	var users []users.User
-// 	// err :=
-// 	return users,nil
-// }
 
 func (*userRepository) GetUserByID(id uint) (*domains.PublicUser, rest_errors.RestErr) {
 	return nil, nil
@@ -58,7 +56,10 @@ func (u *userRepository) GetUsers(params map[string]interface{}) ([]domains.Publ
 	return []domains.PublicUser{}, nil
 }
 
-func (u *userRepository) UpdateActiveState(userId uint) (*domains.PublicUser, rest_errors.RestErr) {
+func (u *userRepository) UpdateActiveStateById(userId uint) (*domains.PublicUser, rest_errors.RestErr) {
+	return nil, nil
+}
+func (u *userRepository) UpdateActiveStateByPhone(phone string) (*domains.PublicUser, rest_errors.RestErr) {
 	return nil, nil
 }
 
@@ -69,3 +70,9 @@ func (u *userRepository) UpdateBlockState(userId uint) (*domains.PublicUser, res
 func (u *userRepository) UpdateUser(userId uint, body domains.UpdateUserRequest) (*domains.PublicUser, rest_errors.RestErr) {
 	return nil, nil
 }
+
+func (u *userRepository) UpdatePasswordByPhone(newPass , phone string) (*domains.PublicUser, rest_errors.RestErr) {
+	return nil, nil
+}
+
+
