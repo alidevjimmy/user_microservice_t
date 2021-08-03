@@ -6,9 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-
-)
+const ()
 
 var (
 	CodeRepository codeRepositoryInterface = &codeRepository{}
@@ -19,13 +17,13 @@ type codeRepository struct {
 }
 
 type codeRepositoryInterface interface {
-	FindCode(phone string , code , reason int) (*domains.Code, rest_errors.RestErr)
+	FindCode(phone string, code, reason int) (*domains.Code, rest_errors.RestErr)
 }
 
 func NewCodeRepository(db *gorm.DB) *codeRepository {
 	return &codeRepository{DB: db}
 }
 
-func (c *codeRepository) FindCode(phone string , code , reason int) (*domains.Code, rest_errors.RestErr) {
+func (c *codeRepository) FindCode(phone string, code, reason int) (*domains.Code, rest_errors.RestErr) {
 	return nil, nil
 }

@@ -2,24 +2,25 @@ package services
 
 import (
 	"database/sql"
+	"net/http"
+	"testing"
+	"time"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/alidevjimmy/go-rest-utils/crypto"
 	"github.com/alidevjimmy/go-rest-utils/rest_errors"
 	"github.com/alidevjimmy/user_microservice_t/domains/v1"
 	"github.com/alidevjimmy/user_microservice_t/errors/v1"
-	"github.com/alidevjimmy/user_microservice_t/repositories/postgres/v1"
+	repositories "github.com/alidevjimmy/user_microservice_t/repositories/postgres/v1"
 	"github.com/golang-jwt/jwt"
 	"gorm.io/gorm"
-	"net/http"
-	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/postgres"
 )
 
 var (
-	registerRequest domains.RegisterRequest = domains.RegisterRequest{
+	RegisterRequest domains.RegisterRequest = domains.RegisterRequest{
 		Phone:    "09122334344",
 		Username: "test_user",
 		Name:     "ali",
@@ -31,17 +32,17 @@ var (
 		PhoneOrUsername: "09122334344",
 		Password:        "password",
 	}
-	sendCodeFunc              func(phone string) rest_errors.RestErr
-	generateJwtFunc           func(data jwt.MapClaims) (string, rest_errors.RestErr)
-	verifyJwtFunc             func(token string) (*domains.Jwt, bool, rest_errors.RestErr)
-	getUserFunc               func(id uint) (*domains.PublicUser, rest_errors.RestErr)
-	getUsersFunc              func(params map[string]interface{}) ([]domains.PublicUser, rest_errors.RestErr)
-	updateUserActiveStateByIdFunc func(userId uint) (*domains.PublicUser, rest_errors.RestErr)
+	sendCodeFunc                     func(phone string) rest_errors.RestErr
+	generateJwtFunc                  func(data jwt.MapClaims) (string, rest_errors.RestErr)
+	verifyJwtFunc                    func(token string) (*domains.Jwt, bool, rest_errors.RestErr)
+	getUserFunc                      func(id uint) (*domains.PublicUser, rest_errors.RestErr)
+	getUsersFunc                     func(params map[string]interface{}) ([]domains.PublicUser, rest_errors.RestErr)
+	updateUserActiveStateByIdFunc    func(userId uint) (*domains.PublicUser, rest_errors.RestErr)
 	updateUserActiveStateByPhoneFunc func(phone string) (*domains.PublicUser, rest_errors.RestErr)
-	updateUserBlockStateFunc  func(userId uint) (*domains.PublicUser, rest_errors.RestErr)
-	updateUserFunc            func(userId uint, body domains.UpdateUserRequest) (*domains.PublicUser, rest_errors.RestErr)
-	verifyCodeFunc            func(phone string, code, reason int) (bool, rest_errors.RestErr)
-	updatePasswordByPhoneFunc func(newPass, phone string) (*domains.PublicUser, rest_errors.RestErr)
+	updateUserBlockStateFunc         func(userId uint) (*domains.PublicUser, rest_errors.RestErr)
+	updateUserFunc                   func(userId uint, body domains.UpdateUserRequest) (*domains.PublicUser, rest_errors.RestErr)
+	verifyCodeFunc                   func(phone string, code, reason int) (bool, rest_errors.RestErr)
+	updatePasswordByPhoneFunc        func(newPass, phone string) (*domains.PublicUser, rest_errors.RestErr)
 )
 
 type Suite struct {
@@ -151,14 +152,14 @@ func MockDbConnection(t *testing.T) *Suite {
 }
 
 func TestRegisterPessesValidated(t *testing.T) {
-	rr, r := UserService.Register(registerRequest)
+	rr, r := UserService.Register(RegisterRequest)
 	assert.Nil(t, rr)
 	assert.Nil(t, r)
 }
 
 func TestRegisterPhoneRequired(t *testing.T) {
-	registerRequest.Phone = ""
-	rr, err := UserService.Register(registerRequest)
+	RegisterRequest.Phone = ""
+	rr, err := UserService.Register(RegisterRequest)
 	assert.Nil(t, rr)
 	assert.NotNil(t, err)
 	assert.Equal(t, http.StatusBadRequest, err.Status())
@@ -166,8 +167,8 @@ func TestRegisterPhoneRequired(t *testing.T) {
 }
 
 func TestRegisterUsernameRequired(t *testing.T) {
-	registerRequest.Username = ""
-	rr, err := UserService.Register(registerRequest)
+	RegisterRequest.Username = ""
+	rr, err := UserService.Register(RegisterRequest)
 	assert.Nil(t, rr)
 	assert.NotNil(t, err)
 	assert.Equal(t, http.StatusBadRequest, err.Status())
@@ -175,8 +176,8 @@ func TestRegisterUsernameRequired(t *testing.T) {
 }
 
 func TestRegisterNameRequired(t *testing.T) {
-	registerRequest.Name = ""
-	rr, err := UserService.Register(registerRequest)
+	RegisterRequest.Name = ""
+	rr, err := UserService.Register(RegisterRequest)
 	assert.Nil(t, rr)
 	assert.NotNil(t, err)
 	assert.Equal(t, http.StatusBadRequest, err.Status())
@@ -184,24 +185,24 @@ func TestRegisterNameRequired(t *testing.T) {
 }
 
 func TestRegisterFamilyRequired(t *testing.T) {
-	registerRequest.Family = ""
-	rr, err := UserService.Register(registerRequest)
+	RegisterRequest.Family = ""
+	rr, err := UserService.Register(RegisterRequest)
 	assert.Nil(t, rr)
 	assert.NotNil(t, err)
 	assert.Equal(t, http.StatusBadRequest, err.Status())
 	assert.Equal(t, errors.FamilyIsRequiredErrorMessage, err.Message())
 }
 func TestRegisterAgeRequired(t *testing.T) {
-	registerRequest.Age = 0
-	rr, err := UserService.Register(registerRequest)
+	RegisterRequest.Age = 0
+	rr, err := UserService.Register(RegisterRequest)
 	assert.Nil(t, rr)
 	assert.NotNil(t, err)
 	assert.Equal(t, http.StatusBadRequest, err.Status())
 	assert.Equal(t, errors.AgeIsRequiredErrorMessage, err.Message())
 }
 func TestRegisterPasswordRequired(t *testing.T) {
-	registerRequest.Password = ""
-	rr, err := UserService.Register(registerRequest)
+	RegisterRequest.Password = ""
+	rr, err := UserService.Register(RegisterRequest)
 	assert.Nil(t, rr)
 	assert.NotNil(t, err)
 	assert.Equal(t, http.StatusBadRequest, err.Status())
@@ -213,13 +214,13 @@ func TestRegisterCanInsertDuplicatedPhone(t *testing.T) {
 
 	s.mock.ExpectBegin()
 	s.mock.ExpectExec("INSERT INTO users (phone,username,name,family,age,password) VALUES (?,?,?,?,?,?)").
-		WithArgs(registerRequest.Phone, registerRequest.Username, registerRequest.Name, registerRequest.Family, registerRequest.Age, registerRequest.Password).
+		WithArgs(RegisterRequest.Phone, RegisterRequest.Username, RegisterRequest.Name, RegisterRequest.Family, RegisterRequest.Age, RegisterRequest.Password).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	s.mock.ExpectCommit()
 
 	//Respo
 
-	rr, err := UserService.Register(registerRequest)
+	rr, err := UserService.Register(RegisterRequest)
 	assert.Nil(t, rr)
 	assert.NotNil(t, err)
 	assert.Equal(t, http.StatusBadRequest, err.Status())
@@ -230,15 +231,15 @@ func TestRegisterCanInsertDuplicatedUsername(t *testing.T) {
 	s := MockDbConnection(t)
 	s.mock.ExpectBegin()
 	s.mock.ExpectExec("INSERT INTO users (phone,username,name,family,age,password) VALUES (?,?,?,?,?,?)").
-		WithArgs(registerRequest.Phone, registerRequest.Username, registerRequest.Name, registerRequest.Family, registerRequest.Age, registerRequest.Password).
+		WithArgs(RegisterRequest.Phone, RegisterRequest.Username, RegisterRequest.Name, RegisterRequest.Family, RegisterRequest.Age, RegisterRequest.Password).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	s.mock.ExpectCommit()
 
-	registerRequest.Phone = "092837232"
+	RegisterRequest.Phone = "092837232"
 
 	repositories.UserRepository = &UserRespositoryMock{DB: s.db}
 
-	rr, error := UserService.Register(registerRequest)
+	rr, error := UserService.Register(RegisterRequest)
 	assert.Nil(t, rr)
 	assert.NotNil(t, error)
 	assert.Equal(t, http.StatusBadRequest, error.Status())
@@ -253,7 +254,7 @@ func TestRegisterFailToGetVerificationCode(t *testing.T) {
 
 	CodeService = &CodeServiceMock{}
 
-	rr, err := UserService.Register(registerRequest)
+	rr, err := UserService.Register(RegisterRequest)
 	assert.NotNil(t, err)
 	assert.Equal(t, http.StatusInternalServerError, err.Status())
 	assert.Equal(t, errors.InternalServerErrorMessage, err.Message())
@@ -268,7 +269,7 @@ func TestRegisterFailToGenerateJwtToken(t *testing.T) {
 
 	JwtService = &JwtServiceMock{}
 
-	rr, err := UserService.Register(registerRequest)
+	rr, err := UserService.Register(RegisterRequest)
 	assert.NotNil(t, err)
 	assert.Equal(t, http.StatusInternalServerError, err.Status())
 	assert.Equal(t, errors.InternalServerErrorMessage, err.Message())
@@ -276,8 +277,8 @@ func TestRegisterFailToGenerateJwtToken(t *testing.T) {
 }
 
 func TestRegisterUsernameOnlyCanContainUnderlineAndEnglishWordsAndNumbers(t *testing.T) {
-	registerRequest.Username = "sdff-dfd"
-	rr, err := UserService.Register(registerRequest)
+	RegisterRequest.Username = "sdff-dfd"
+	rr, err := UserService.Register(RegisterRequest)
 	assert.NotNil(t, err)
 	assert.Equal(t, http.StatusBadRequest, err.Status())
 	assert.Equal(t, errors.UsernameOnlyCanContainUnderlineAndEnglishWordsAndNumbersErrorMessage, err.Message())
@@ -288,14 +289,14 @@ func TestRegisterUsernameOnlyCanContainUnderlineAndEnglishWordsAndNumbers(t *tes
 
 func TestLoginSeccessfully(t *testing.T) {
 	s := MockDbConnection(t)
-	registerRequest.Password = crypto.GenerateSha256(registerRequest.Password)
+	RegisterRequest.Password = crypto.GenerateSha256(RegisterRequest.Password)
 	s.mock.ExpectBegin()
 	s.mock.ExpectExec("INSERT INTO users (phone,username,name,family,age,password) VALUES (?,?,?,?,?,?)").
-		WithArgs(registerRequest.Phone, registerRequest.Username, registerRequest.Name, registerRequest.Family, registerRequest.Age, registerRequest.Password).
+		WithArgs(RegisterRequest.Phone, RegisterRequest.Username, RegisterRequest.Name, RegisterRequest.Family, RegisterRequest.Age, RegisterRequest.Password).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	s.mock.ExpectCommit()
 
-	loginRequest.Password = registerRequest.Password
+	loginRequest.Password = RegisterRequest.Password
 	repositories.UserRepository = &UserRespositoryMock{DB: s.db}
 
 	lr, err := UserService.Login(loginRequest)
@@ -324,14 +325,14 @@ func TestLoginPasswordRequired(t *testing.T) {
 func TestLoginWithPhone(t *testing.T) {
 	s := MockDbConnection(t)
 
-	registerRequest.Password = crypto.GenerateSha256(registerRequest.Password)
+	RegisterRequest.Password = crypto.GenerateSha256(RegisterRequest.Password)
 	s.mock.ExpectBegin()
 	s.mock.ExpectExec("INSERT INTO users (phone,username,name,family,age,password) VALUES (?,?,?,?,?,?)").
-		WithArgs(registerRequest.Phone, registerRequest.Username, registerRequest.Name, registerRequest.Family, registerRequest.Age, registerRequest.Password).
+		WithArgs(RegisterRequest.Phone, RegisterRequest.Username, RegisterRequest.Name, RegisterRequest.Family, RegisterRequest.Age, RegisterRequest.Password).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	s.mock.ExpectCommit()
 
-	loginRequest.Password = registerRequest.Password
+	loginRequest.Password = RegisterRequest.Password
 	repositories.UserRepository = &UserRespositoryMock{DB: s.db}
 
 	lr, err := UserService.Login(loginRequest)
@@ -342,15 +343,15 @@ func TestLoginWithPhone(t *testing.T) {
 func TestLoginWithUsername(t *testing.T) {
 	s := MockDbConnection(t)
 
-	registerRequest.Password = crypto.GenerateSha256(registerRequest.Password)
+	RegisterRequest.Password = crypto.GenerateSha256(RegisterRequest.Password)
 	s.mock.ExpectBegin()
 	s.mock.ExpectExec("INSERT INTO users (phone,username,name,family,age,password) VALUES (?,?,?,?,?,?)").
-		WithArgs(registerRequest.Phone, registerRequest.Username, registerRequest.Name, registerRequest.Family, registerRequest.Age, registerRequest.Password).
+		WithArgs(RegisterRequest.Phone, RegisterRequest.Username, RegisterRequest.Name, RegisterRequest.Family, RegisterRequest.Age, RegisterRequest.Password).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	s.mock.ExpectCommit()
 
-	loginRequest.Password = registerRequest.Password
-	loginRequest.PhoneOrUsername = registerRequest.Username
+	loginRequest.Password = RegisterRequest.Password
+	loginRequest.PhoneOrUsername = RegisterRequest.Username
 	//repositories.UserRepository.
 
 	lr, err := UserService.Login(loginRequest)
@@ -366,7 +367,7 @@ func TestLoginFailToGenerateJwtToken(t *testing.T) {
 
 	JwtService = &JwtServiceMock{}
 
-	rr, err := UserService.Register(registerRequest)
+	rr, err := UserService.Register(RegisterRequest)
 	assert.NotNil(t, err)
 	assert.Equal(t, http.StatusInternalServerError, err.Status())
 	assert.Equal(t, errors.InternalServerErrorMessage, err.Message())
@@ -392,7 +393,30 @@ func TestGetUserFailToGetDataFromRepository(t *testing.T) {
 	JwtService = &JwtServiceMock{}
 
 	getUserFunc = func(id uint) (*domains.PublicUser, rest_errors.RestErr) {
-		return nil, rest_errors.NewNotFoundError(errors.UserNotFoundError)
+		return nil, rest_errors.NewNotFoundError(errors.InternalServerErrorMessage)
+	}
+
+	s := MockDbConnection(t)
+	repositories.UserRepository = &UserRespositoryMock{DB: s.db}
+
+	gu, err := UserService.GetUser("some token")
+	assert.NotNil(t, err)
+	assert.Nil(t, gu)
+	assert.Equal(t, http.StatusInternalServerError, err.Status())
+	assert.Equal(t, errors.InternalServerErrorMessage, err.Message())
+}
+
+func TestGetUserNotFound(t *testing.T) {
+	verifyJwtFunc = func(token string) (*domains.Jwt, bool, rest_errors.RestErr) {
+		return &domains.Jwt{
+			Sub: "1",
+			Exp: time.Now().Add(time.Hour),
+		}, true, nil
+	}
+	JwtService = &JwtServiceMock{}
+
+	getUserFunc = func(id uint) (*domains.PublicUser, rest_errors.RestErr) {
+		return nil, nil
 	}
 
 	s := MockDbConnection(t)
@@ -418,9 +442,9 @@ func TestGetUserSuccessfully(t *testing.T) {
 	getUserFunc = func(id uint) (*domains.PublicUser, rest_errors.RestErr) {
 		return &domains.PublicUser{
 			ID:       uint(1),
-			Phone:    registerRequest.Phone,
-			Username: registerRequest.Username,
-			Age:      registerRequest.Age,
+			Phone:    RegisterRequest.Phone,
+			Username: RegisterRequest.Username,
+			Age:      RegisterRequest.Age,
 		}, nil
 	}
 
@@ -525,9 +549,9 @@ func TestFailToUpdateUser(t *testing.T) {
 
 	repositories.UserRepository = &UserRespositoryMock{}
 	body := domains.UpdateUserRequest{
-		Username: registerRequest.Username,
+		Username: RegisterRequest.Username,
 	}
-	gu, err := UserService.UpdateUser(uint(1), body)
+	gu, err := UserService.UpdateUser("", body)
 
 	assert.NotNil(t, err)
 	assert.Nil(t, gu)
@@ -545,10 +569,10 @@ func TestSuccessfullyUpdateUser(t *testing.T) {
 	repositories.UserRepository = &UserRespositoryMock{}
 
 	body := domains.UpdateUserRequest{
-		Username: registerRequest.Username,
+		Username: RegisterRequest.Username,
 	}
 
-	u, err := UserService.UpdateUser(uint(1), body)
+	u, err := UserService.UpdateUser("", body)
 
 	assert.NotNil(t, u)
 	assert.Nil(t, err)
@@ -561,7 +585,7 @@ func TestChangePasswordFailToVerifyCode(t *testing.T) {
 
 	CodeService = &CodeServiceMock{}
 
-	u, err := UserService.ChangeForgotPassword("new pass", registerRequest.Phone, 123123)
+	u, err := UserService.ChangeForgotPassword("new pass", RegisterRequest.Phone, 123123)
 	assert.NotNil(t, err)
 	assert.Nil(t, u)
 	assert.Equal(t, http.StatusInternalServerError, err.Status())
@@ -575,7 +599,7 @@ func TestChangePasswordInvalidCode(t *testing.T) {
 
 	CodeService = &CodeServiceMock{}
 
-	u, err := UserService.ChangeForgotPassword("new pass", registerRequest.Phone, 123123)
+	u, err := UserService.ChangeForgotPassword("new pass", RegisterRequest.Phone, 123123)
 	assert.NotNil(t, err)
 	assert.Nil(t, u)
 	assert.Equal(t, http.StatusNotFound, err.Status())
@@ -593,7 +617,7 @@ func TestChangePasswordFailToUpdatePassword(t *testing.T) {
 		return nil, rest_errors.NewInternalServerError(errors.InternalServerErrorMessage, nil)
 	}
 	repositories.UserRepository = &UserRespositoryMock{}
-	u, err := UserService.ChangeForgotPassword("new pass", registerRequest.Phone, 123123)
+	u, err := UserService.ChangeForgotPassword("new pass", RegisterRequest.Phone, 123123)
 	assert.NotNil(t, err)
 	assert.Nil(t, u)
 	assert.Equal(t, http.StatusNotFound, err.Status())
@@ -613,7 +637,7 @@ func TestChangePasswordSuccessfully(t *testing.T) {
 
 	repositories.UserRepository = &UserRespositoryMock{}
 
-	u, err := UserService.ChangeForgotPassword("new pass", registerRequest.Phone, 123123)
+	u, err := UserService.ChangeForgotPassword("new pass", RegisterRequest.Phone, 123123)
 	assert.Nil(t, err)
 	assert.NotNil(t, u)
 }
@@ -625,7 +649,7 @@ func TestActiveUserInvalidCode(t *testing.T) {
 
 	CodeService = &CodeServiceMock{}
 
-	u, err := UserService.ActiveUser(registerRequest.Phone, 123123)
+	u, err := UserService.ActiveUser(RegisterRequest.Phone, 123123)
 	assert.NotNil(t, err)
 	assert.Nil(t, u)
 	assert.Equal(t, http.StatusNotFound, err.Status())
@@ -643,7 +667,7 @@ func TestActiveUserFailToUpdate(t *testing.T) {
 		return nil, nil
 	}
 	repositories.UserRepository = &UserRespositoryMock{}
-	u, err := UserService.ActiveUser(registerRequest.Phone, 123123)
+	u, err := UserService.ActiveUser(RegisterRequest.Phone, 123123)
 	assert.NotNil(t, err)
 	assert.Nil(t, u)
 	assert.Equal(t, http.StatusNotFound, err.Status())
@@ -663,7 +687,7 @@ func TestActiveUserSuccessfully(t *testing.T) {
 
 	repositories.UserRepository = &UserRespositoryMock{}
 
-	u, err := UserService.ActiveUser(registerRequest.Phone, 123123)
+	u, err := UserService.ActiveUser(RegisterRequest.Phone, 123123)
 	assert.Nil(t, err)
 	assert.NotNil(t, u)
 }

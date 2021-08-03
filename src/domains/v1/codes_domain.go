@@ -8,9 +8,9 @@ import (
 type (
 	Code struct {
 		gorm.Model
-		Phone          string `json:"phone"`
-		Code           int    `json:"code"`
-		CodePurpose     int `json:"code_purpose"`
+		Phone          string    `json:"phone"`
+		Code           int       `json:"code"`
+		CodePurpose    int       `json:"code_purpose"`
 		CodeExpiration time.Time `json:"code_expiration"`
 	}
 )

@@ -17,7 +17,7 @@ const (
 
 type codeServiceInterface interface {
 	Send(phone string, reason int) rest_errors.RestErr
-		Verify(phone string, code, reason int) (bool, rest_errors.RestErr)
+	Verify(phone string, code, reason int) (bool, rest_errors.RestErr)
 }
 type codeService struct{}
 
