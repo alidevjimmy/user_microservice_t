@@ -1,6 +1,14 @@
 package controllers
 
-import "github.com/labstack/echo/v4"
+import (
+	"net/http"
+
+	"github.com/alidevjimmy/go-rest-utils/rest_errors"
+	"github.com/alidevjimmy/user_microservice_t/domains/v1"
+	"github.com/alidevjimmy/user_microservice_t/errors/v1"
+	"github.com/alidevjimmy/user_microservice_t/services/v1"
+	"github.com/labstack/echo/v4"
+)
 
 var UsersController usersControllerInterface = &usersController{}
 
@@ -19,8 +27,16 @@ type usersControllerInterface interface {
 type usersController struct{}
 
 func (*usersController) Register(c echo.Context) error {
-
-	return c.JSON(200, "you are not registered!")
+	rq := new(domains.RegisterRequest)
+	if err := c.Bind(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		return c.JSON(http.StatusBadRequest, er)
+	}
+	user, err := services.UserService.Register(*rq)
+	if err != nil {
+		c.JSON(err.Status(), err)
+	}
+	return c.JSON(200, user)
 }
 
 func (*usersController) Login(c echo.Context) error {

@@ -16,4 +16,5 @@ const (
 	UserAlreadyActiveErrorMessage                                        = "حساب کاربری شما فعال است"
 	CodeOrPhoneDoesNotExistsErrorMessage                                 = "کد فعالسازی یا شماره تماس نادرست است"
 	CodeIsExpiredErrorMessage                                            = "کد فعالسازی شما منقضی شده است"
+	InvalidInputErrorMessage                                             = "ورودی معتبر نیست"
 )
