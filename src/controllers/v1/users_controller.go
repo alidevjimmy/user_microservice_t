@@ -32,6 +32,9 @@ func (*usersController) Register(c echo.Context) error {
 		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
 		return c.JSON(http.StatusBadRequest, er)
 	}
+	if err := c.Validate(rq); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+	}
 	user, err := services.UserService.Register(*rq)
 	if err != nil {
 		c.JSON(err.Status(), err)

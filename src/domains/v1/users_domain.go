@@ -1,16 +1,10 @@
 package domains
 
 import (
-	"github.com/alidevjimmy/go-rest-utils/rest_errors"
-	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
 
 type (
-	UserValidator struct {
-		validator *validator.Validate
-	}
-
 	User struct {
 		gorm.Model
 		Phone    string `json:"phone" gorm:"column:phone"`
@@ -46,7 +40,7 @@ type (
 	}
 
 	LoginRequest struct {
-		PhoneOrUsername string `json:"phone" validate:"required,max=50"`
+		PhoneOrUsername string `json:"phoneOrUsername" validate:"required,max=50"`
 		Password        string `json:"password" validate:"required,max=300"`
 	}
 
@@ -65,14 +59,11 @@ type (
 		Age      uint   `json:"age" validate:"required"`
 		Password string `json:"password" validate:"required"`
 	}
-)
 
-func (uv *UserValidator) Validate(i interface{}) error {
-	if err := uv.validator.Struct(i); err != nil {
-		return rest_errors.NewBadRequestError(err.Error())
+	GetUserRequest struct {
+		Token string `json:"token"`
 	}
-	return nil
-}
+)
 
 func (u *User) TableName() string {
 	return "users"

@@ -1,8 +1,9 @@
 package domains
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type (
@@ -12,6 +13,11 @@ type (
 		Code           int       `json:"code"`
 		CodePurpose    int       `json:"code_purpose"`
 		CodeExpiration time.Time `json:"code_expiration"`
+	}
+
+	SendCodeRequest struct {
+		Phone  string `json:"phone"`
+		Reason int    `json:"reason"`
 	}
 )
 

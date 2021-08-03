@@ -116,64 +116,6 @@ func (u *UserRespositoryMock) UpdateActiveStateByPhone(phone string) (*domains.P
 	return updateUserActiveStateByPhoneFunc(phone)
 }
 
-func TestRegisterPessesValidated(t *testing.T) {
-	rr, r := UserService.Register(RegisterRequest)
-	assert.Nil(t, rr)
-	assert.Nil(t, r)
-}
-
-func TestRegisterPhoneRequired(t *testing.T) {
-	RegisterRequest.Phone = ""
-	rr, err := UserService.Register(RegisterRequest)
-	assert.Nil(t, rr)
-	assert.NotNil(t, err)
-	assert.Equal(t, http.StatusBadRequest, err.Status())
-	assert.Equal(t, errors.PhoneIsRequiredErrorMessage, err.Message())
-}
-
-func TestRegisterUsernameRequired(t *testing.T) {
-	RegisterRequest.Username = ""
-	rr, err := UserService.Register(RegisterRequest)
-	assert.Nil(t, rr)
-	assert.NotNil(t, err)
-	assert.Equal(t, http.StatusBadRequest, err.Status())
-	assert.Equal(t, errors.UsernameIsRequiredErrorMessage, err.Message())
-}
-
-func TestRegisterNameRequired(t *testing.T) {
-	RegisterRequest.Name = ""
-	rr, err := UserService.Register(RegisterRequest)
-	assert.Nil(t, rr)
-	assert.NotNil(t, err)
-	assert.Equal(t, http.StatusBadRequest, err.Status())
-	assert.Equal(t, errors.NameIsRequiredErrorMessage, err.Message())
-}
-
-func TestRegisterFamilyRequired(t *testing.T) {
-	RegisterRequest.Family = ""
-	rr, err := UserService.Register(RegisterRequest)
-	assert.Nil(t, rr)
-	assert.NotNil(t, err)
-	assert.Equal(t, http.StatusBadRequest, err.Status())
-	assert.Equal(t, errors.FamilyIsRequiredErrorMessage, err.Message())
-}
-func TestRegisterAgeRequired(t *testing.T) {
-	RegisterRequest.Age = 0
-	rr, err := UserService.Register(RegisterRequest)
-	assert.Nil(t, rr)
-	assert.NotNil(t, err)
-	assert.Equal(t, http.StatusBadRequest, err.Status())
-	assert.Equal(t, errors.AgeIsRequiredErrorMessage, err.Message())
-}
-func TestRegisterPasswordRequired(t *testing.T) {
-	RegisterRequest.Password = ""
-	rr, err := UserService.Register(RegisterRequest)
-	assert.Nil(t, rr)
-	assert.NotNil(t, err)
-	assert.Equal(t, http.StatusBadRequest, err.Status())
-	assert.Equal(t, errors.PasswordIsRequiredErrorMessage, err.Message())
-}
-
 func TestRegisterCanInsertDuplicatedPhone(t *testing.T) {
 	getUserByPhoneFunc = func(phone string) (*domains.PublicUser, rest_errors.RestErr) {
 		return &domains.PublicUser{
