@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"os"
+
 	"github.com/alidevjimmy/go-rest-utils/rest_errors"
 	"github.com/alidevjimmy/user_microservice_t/domains/v1"
 	"gorm.io/gorm"
@@ -25,7 +27,10 @@ type userRepositoryInterface interface {
 	UpdateActiveStateById(userId uint) (*domains.PublicUser, rest_errors.RestErr)
 }
 
-func NewUserRepository(db *gorm.DB) *userRepository {
+func NewUserRepository(db *gorm.DB) userRepositoryInterface {
+	if os.Getenv("DEBUG_MODE") == "true" {
+		return UserRepository
+	}
 	if db == nil {
 		db = postgresConnector()
 	}

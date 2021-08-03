@@ -1,13 +1,11 @@
 package services
 
 import (
-	"database/sql"
 	"net/http"
 	"testing"
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/alidevjimmy/go-rest-utils/crypto"
 	"github.com/alidevjimmy/go-rest-utils/rest_errors"
 	"github.com/alidevjimmy/user_microservice_t/domains/v1"
 	"github.com/alidevjimmy/user_microservice_t/errors/v1"
@@ -16,7 +14,6 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/postgres"
 )
 
 var (
@@ -32,17 +29,20 @@ var (
 		PhoneOrUsername: "09122334344",
 		Password:        "password",
 	}
-	sendCodeFunc                     func(phone string) rest_errors.RestErr
-	generateJwtFunc                  func(data jwt.MapClaims) (string, rest_errors.RestErr)
-	verifyJwtFunc                    func(token string) (*domains.Jwt, bool, rest_errors.RestErr)
-	getUserFunc                      func(id uint) (*domains.PublicUser, rest_errors.RestErr)
-	getUsersFunc                     func(params map[string]interface{}) ([]domains.PublicUser, rest_errors.RestErr)
-	updateUserActiveStateByIdFunc    func(userId uint) (*domains.PublicUser, rest_errors.RestErr)
-	updateUserActiveStateByPhoneFunc func(phone string) (*domains.PublicUser, rest_errors.RestErr)
-	updateUserBlockStateFunc         func(userId uint) (*domains.PublicUser, rest_errors.RestErr)
-	updateUserFunc                   func(userId uint, body domains.UpdateUserRequest) (*domains.PublicUser, rest_errors.RestErr)
-	verifyCodeFunc                   func(phone string, code, reason int) (bool, rest_errors.RestErr)
-	updatePasswordByPhoneFunc        func(newPass, phone string) (*domains.PublicUser, rest_errors.RestErr)
+	sendCodeFunc                            func(phone string) rest_errors.RestErr
+	generateJwtFunc                         func(data jwt.MapClaims) (string, rest_errors.RestErr)
+	verifyJwtFunc                           func(token string) (*domains.Jwt, bool, rest_errors.RestErr)
+	getUserFunc                             func(id uint) (*domains.PublicUser, rest_errors.RestErr)
+	getUsersFunc                            func(params map[string]interface{}) ([]domains.PublicUser, rest_errors.RestErr)
+	updateUserActiveStateByIdFunc           func(userId uint) (*domains.PublicUser, rest_errors.RestErr)
+	updateUserActiveStateByPhoneFunc        func(phone string) (*domains.PublicUser, rest_errors.RestErr)
+	updateUserBlockStateFunc                func(userId uint) (*domains.PublicUser, rest_errors.RestErr)
+	updateUserFunc                          func(userId uint, body domains.UpdateUserRequest) (*domains.PublicUser, rest_errors.RestErr)
+	verifyCodeFunc                          func(phone string, code, reason int) (bool, rest_errors.RestErr)
+	updatePasswordByPhoneFunc               func(newPass, phone string) (*domains.PublicUser, rest_errors.RestErr)
+	getUserByPhoneFunc                      func(phone string) (*domains.PublicUser, rest_errors.RestErr)
+	getUserByUsernameFunc                   func(username string) (*domains.PublicUser, rest_errors.RestErr)
+	getUserByPhoneOrUsernameAndPasswordFunc func(pou, password string) (*domains.PublicUser, rest_errors.RestErr)
 )
 
 type Suite struct {
@@ -116,41 +116,6 @@ func (u *UserRespositoryMock) UpdateActiveStateByPhone(phone string) (*domains.P
 	return updateUserActiveStateByPhoneFunc(phone)
 }
 
-func MockDbConnection(t *testing.T) *Suite {
-	s := &Suite{}
-	var (
-		db  *sql.DB
-		err error
-	)
-	db, s.mock, err = sqlmock.New()
-	defer db.Close()
-	if err != nil {
-		t.Errorf("Failed to open mock sql db, got error: %v", err)
-	}
-
-	if db == nil {
-		t.Error("mock db is null")
-	}
-
-	if s.mock == nil {
-		t.Error("sqlmock is null")
-	}
-	dialector := postgres.New(postgres.Config{
-		DSN:                  "sqlmock_db_0",
-		DriverName:           "postgres",
-		Conn:                 db,
-		PreferSimpleProtocol: true,
-	})
-	s.db, err = gorm.Open(dialector, &gorm.Config{})
-	if err != nil {
-		t.Errorf("Failed to open gorm v2 db, got error: %v", err)
-	}
-	if s.db == nil {
-		t.Error("gorm db is null")
-	}
-	return s
-}
-
 func TestRegisterPessesValidated(t *testing.T) {
 	rr, r := UserService.Register(RegisterRequest)
 	assert.Nil(t, rr)
@@ -210,15 +175,14 @@ func TestRegisterPasswordRequired(t *testing.T) {
 }
 
 func TestRegisterCanInsertDuplicatedPhone(t *testing.T) {
-	s := MockDbConnection(t)
+	getUserByPhoneFunc = func(phone string) (*domains.PublicUser, rest_errors.RestErr) {
+		return &domains.PublicUser{
+			ID:    uint(1),
+			Phone: phone,
+		}, nil
+	}
 
-	s.mock.ExpectBegin()
-	s.mock.ExpectExec("INSERT INTO users (phone,username,name,family,age,password) VALUES (?,?,?,?,?,?)").
-		WithArgs(RegisterRequest.Phone, RegisterRequest.Username, RegisterRequest.Name, RegisterRequest.Family, RegisterRequest.Age, RegisterRequest.Password).
-		WillReturnResult(sqlmock.NewResult(1, 1))
-	s.mock.ExpectCommit()
-
-	//Respo
+	repositories.UserRepository = &UserRespositoryMock{}
 
 	rr, err := UserService.Register(RegisterRequest)
 	assert.Nil(t, rr)
@@ -228,16 +192,14 @@ func TestRegisterCanInsertDuplicatedPhone(t *testing.T) {
 }
 
 func TestRegisterCanInsertDuplicatedUsername(t *testing.T) {
-	s := MockDbConnection(t)
-	s.mock.ExpectBegin()
-	s.mock.ExpectExec("INSERT INTO users (phone,username,name,family,age,password) VALUES (?,?,?,?,?,?)").
-		WithArgs(RegisterRequest.Phone, RegisterRequest.Username, RegisterRequest.Name, RegisterRequest.Family, RegisterRequest.Age, RegisterRequest.Password).
-		WillReturnResult(sqlmock.NewResult(1, 1))
-	s.mock.ExpectCommit()
+	getUserByUsernameFunc = func(username string) (*domains.PublicUser, rest_errors.RestErr) {
+		return &domains.PublicUser{
+			ID:       uint(1),
+			Username: username,
+		}, nil
+	}
 
-	RegisterRequest.Phone = "092837232"
-
-	repositories.UserRepository = &UserRespositoryMock{DB: s.db}
+	repositories.UserRepository = &UserRespositoryMock{}
 
 	rr, error := UserService.Register(RegisterRequest)
 	assert.Nil(t, rr)
@@ -246,10 +208,9 @@ func TestRegisterCanInsertDuplicatedUsername(t *testing.T) {
 	assert.Equal(t, errors.DuplicateUsernameErrorMessage, error.Message())
 }
 
-func TestRegisterFailToGetVerificationCode(t *testing.T) {
-	// mock Send service method
+func TestRegisterFailToSendVerificationCode(t *testing.T) {
 	sendCodeFunc = func(phone string) rest_errors.RestErr {
-		return rest_errors.NewInternalServerError("cannot send verification code", nil)
+		return rest_errors.NewInternalServerError(errors.InternalServerErrorMessage, nil)
 	}
 
 	CodeService = &CodeServiceMock{}
@@ -288,16 +249,14 @@ func TestRegisterUsernameOnlyCanContainUnderlineAndEnglishWordsAndNumbers(t *tes
 // login tests
 
 func TestLoginSeccessfully(t *testing.T) {
-	s := MockDbConnection(t)
-	RegisterRequest.Password = crypto.GenerateSha256(RegisterRequest.Password)
-	s.mock.ExpectBegin()
-	s.mock.ExpectExec("INSERT INTO users (phone,username,name,family,age,password) VALUES (?,?,?,?,?,?)").
-		WithArgs(RegisterRequest.Phone, RegisterRequest.Username, RegisterRequest.Name, RegisterRequest.Family, RegisterRequest.Age, RegisterRequest.Password).
-		WillReturnResult(sqlmock.NewResult(1, 1))
-	s.mock.ExpectCommit()
+	getUserByPhoneOrUsernameAndPasswordFunc = func(pou, password string) (*domains.PublicUser, rest_errors.RestErr) {
+		return &domains.PublicUser{
+			ID:    uint(1),
+			Phone: pou,
+		}, nil
+	}
 
-	loginRequest.Password = RegisterRequest.Password
-	repositories.UserRepository = &UserRespositoryMock{DB: s.db}
+	repositories.UserRepository = &UserRespositoryMock{}
 
 	lr, err := UserService.Login(loginRequest)
 	assert.NotNil(t, lr)
@@ -323,37 +282,29 @@ func TestLoginPasswordRequired(t *testing.T) {
 }
 
 func TestLoginWithPhone(t *testing.T) {
-	s := MockDbConnection(t)
+	getUserByPhoneOrUsernameAndPasswordFunc = func(pou, password string) (*domains.PublicUser, rest_errors.RestErr) {
+		return &domains.PublicUser{
+			ID:    uint(1),
+			Phone: pou,
+		}, nil
+	}
 
-	RegisterRequest.Password = crypto.GenerateSha256(RegisterRequest.Password)
-	s.mock.ExpectBegin()
-	s.mock.ExpectExec("INSERT INTO users (phone,username,name,family,age,password) VALUES (?,?,?,?,?,?)").
-		WithArgs(RegisterRequest.Phone, RegisterRequest.Username, RegisterRequest.Name, RegisterRequest.Family, RegisterRequest.Age, RegisterRequest.Password).
-		WillReturnResult(sqlmock.NewResult(1, 1))
-	s.mock.ExpectCommit()
-
-	loginRequest.Password = RegisterRequest.Password
-	repositories.UserRepository = &UserRespositoryMock{DB: s.db}
-
+	repositories.UserRepository = &UserRespositoryMock{}
 	lr, err := UserService.Login(loginRequest)
 	assert.NotNil(t, lr)
 	assert.Nil(t, err)
 }
 
 func TestLoginWithUsername(t *testing.T) {
-	s := MockDbConnection(t)
-
-	RegisterRequest.Password = crypto.GenerateSha256(RegisterRequest.Password)
-	s.mock.ExpectBegin()
-	s.mock.ExpectExec("INSERT INTO users (phone,username,name,family,age,password) VALUES (?,?,?,?,?,?)").
-		WithArgs(RegisterRequest.Phone, RegisterRequest.Username, RegisterRequest.Name, RegisterRequest.Family, RegisterRequest.Age, RegisterRequest.Password).
-		WillReturnResult(sqlmock.NewResult(1, 1))
-	s.mock.ExpectCommit()
+	getUserByPhoneOrUsernameAndPasswordFunc = func(pou, password string) (*domains.PublicUser, rest_errors.RestErr) {
+		return &domains.PublicUser{
+			ID:    uint(1),
+			Phone: pou,
+		}, nil
+	}
 
 	loginRequest.Password = RegisterRequest.Password
 	loginRequest.PhoneOrUsername = RegisterRequest.Username
-	//repositories.UserRepository.
-
 	lr, err := UserService.Login(loginRequest)
 	assert.NotNil(t, lr)
 	assert.Nil(t, err)
@@ -396,8 +347,7 @@ func TestGetUserFailToGetDataFromRepository(t *testing.T) {
 		return nil, rest_errors.NewNotFoundError(errors.InternalServerErrorMessage)
 	}
 
-	s := MockDbConnection(t)
-	repositories.UserRepository = &UserRespositoryMock{DB: s.db}
+	repositories.UserRepository = &UserRespositoryMock{}
 
 	gu, err := UserService.GetUser("some token")
 	assert.NotNil(t, err)
@@ -419,8 +369,7 @@ func TestGetUserNotFound(t *testing.T) {
 		return nil, nil
 	}
 
-	s := MockDbConnection(t)
-	repositories.UserRepository = &UserRespositoryMock{DB: s.db}
+	repositories.UserRepository = &UserRespositoryMock{}
 
 	gu, err := UserService.GetUser("some token")
 	assert.NotNil(t, err)
@@ -448,8 +397,7 @@ func TestGetUserSuccessfully(t *testing.T) {
 		}, nil
 	}
 
-	s := MockDbConnection(t)
-	repositories.UserRepository = &UserRespositoryMock{DB: s.db}
+	repositories.UserRepository = &UserRespositoryMock{}
 
 	pu, err := UserService.GetUser("some token")
 	assert.NotNil(t, pu)

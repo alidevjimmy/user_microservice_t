@@ -19,6 +19,7 @@ type usersControllerInterface interface {
 type usersController struct{}
 
 func (*usersController) Register(c echo.Context) error {
+
 	return c.JSON(200, "you are not registered!")
 }
 
