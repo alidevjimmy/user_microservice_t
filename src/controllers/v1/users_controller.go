@@ -33,43 +33,150 @@ func (*usersController) Register(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, er)
 	}
 	if err := c.Validate(rq); err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		return c.JSON(http.StatusBadRequest, er)
 	}
 	user, err := services.UserService.Register(*rq)
 	if err != nil {
-		c.JSON(err.Status(), err)
+		return c.JSON(err.Status(), err)
 	}
 	return c.JSON(200, user)
 }
 
 func (*usersController) Login(c echo.Context) error {
-	return c.JSON(200, "you are not registered!")
+	rq := new(domains.LoginRequest)
+	if err := c.Bind(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		return c.JSON(http.StatusBadRequest, er)
+	}
+	if err := c.Validate(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		return c.JSON(http.StatusBadRequest, er)
+	}
+	user, err := services.UserService.Login(*rq)
+	if err != nil {
+		return c.JSON(err.Status(), err)
+	}
+	return c.JSON(200, user)
 }
 
 func (*usersController) GetUser(c echo.Context) error {
-	return c.JSON(200, "you are not registered!")
+	rq := new(domains.GetUserRequest)
+	if err := c.Bind(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		return c.JSON(http.StatusBadRequest, er)
+	}
+	if err := c.Validate(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		return c.JSON(http.StatusBadRequest, er)
+	}
+	user, err := services.UserService.GetUser(rq.Token)
+	if err != nil {
+		return c.JSON(err.Status(), err)
+	}
+	return c.JSON(200, user)
 }
 
 func (*usersController) GetUsers(c echo.Context) error {
-	return c.JSON(200, "you are not registered!")
+	rq := new(domains.GetUsersRequest)
+	if err := c.Bind(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		return c.JSON(http.StatusBadRequest, er)
+	}
+	if err := c.Validate(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		return c.JSON(http.StatusBadRequest, er)
+	}
+	user, err := services.UserService.GetUsers(*rq)
+	if err != nil {
+		return c.JSON(err.Status(), err)
+	}
+	return c.JSON(200, user)
 }
 
 func (*usersController) UpdateUserActiveState(c echo.Context) error {
-	return c.JSON(200, "you are not registered!")
+	rq := new(domains.UpdateActiveUserStateRequest)
+	if err := c.Bind(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		return c.JSON(http.StatusBadRequest, er)
+	}
+	if err := c.Validate(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		c.JSON(http.StatusBadRequest, er)
+	}
+	user, err := services.UserService.UpdateUserActiveState(rq.UserID)
+	if err != nil {
+		return c.JSON(err.Status(), err)
+	}
+	return c.JSON(200, user)
 }
 
 func (*usersController) UpdateUserBlockState(c echo.Context) error {
-	return c.JSON(200, "you are not registered!")
+	rq := new(domains.UpdateBlockUserStateRequest)
+	if err := c.Bind(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		return c.JSON(http.StatusBadRequest, er)
+	}
+	if err := c.Validate(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		c.JSON(http.StatusBadRequest, er)
+	}
+	user, err := services.UserService.UpdateUserBlockState(rq.UserID)
+	if err != nil {
+		return c.JSON(err.Status(), err)
+	}
+	return c.JSON(200, user)
 }
 
 func (*usersController) UpdateUser(c echo.Context) error {
-	return c.JSON(200, "you are not registered!")
+	rq := new(domains.UpdateUserRequest)
+	if err := c.Bind(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		return c.JSON(http.StatusBadRequest, er)
+	}
+	if err := c.Validate(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		c.JSON(http.StatusBadRequest, er)
+	}
+	token := c.QueryParam("token")
+	userID := c.Param("user_id")
+	user, err := services.UserService.UpdateUser(userID, token, *rq)
+	if err != nil {
+		return c.JSON(err.Status(), err)
+	}
+	return c.JSON(200, user)
 }
 
 func (*usersController) ChangePassword(c echo.Context) error {
-	return c.JSON(200, "you are not registered!")
+	rq := new(domains.ChangePasswordRequest)
+	if err := c.Bind(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		return c.JSON(http.StatusBadRequest, er)
+	}
+	if err := c.Validate(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		c.JSON(http.StatusBadRequest, er)
+	}
+	user, err := services.UserService.ChangeForgotPassword(*rq)
+	if err != nil {
+		return c.JSON(err.Status(), err)
+	}
+	return c.JSON(200, user)
 }
 
 func (*usersController) Verify(c echo.Context) error {
-	return c.JSON(200, "you are not registered!")
+	rq := new(domains.VerifyUserRequest)
+	if err := c.Bind(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		return c.JSON(http.StatusBadRequest, er)
+	}
+	if err := c.Validate(rq); err != nil {
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		c.JSON(http.StatusBadRequest, er)
+	}
+	user, err := services.UserService.VerifyUser(*rq)
+	if err != nil {
+		return c.JSON(err.Status(), err)
+	}
+	return c.JSON(200, user)
 }

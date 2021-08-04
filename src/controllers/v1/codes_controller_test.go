@@ -41,7 +41,12 @@ func TestSendCodeFailToBindReqBody(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "sendCode"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestSendCodeServiceReturnedError(t *testing.T) {
@@ -62,7 +67,12 @@ func TestSendCodeServiceReturnedError(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "sendCode"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestSendCodePhoneRequired(t *testing.T) {
@@ -76,7 +86,12 @@ func TestSendCodePhoneRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "sendCode"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestSendCodeReasonRequired(t *testing.T) {
@@ -90,5 +105,10 @@ func TestSendCodeReasonRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "sendCode"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }

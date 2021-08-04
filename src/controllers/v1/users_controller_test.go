@@ -94,6 +94,12 @@ func (*UserServiceMock) VerifyUser(body domains.VerifyUserRequest) (*domains.Pub
 	return verifyUserFunc(body)
 }
 
+type RestErrStruct struct {
+	Message string `json:"message"`
+	Error   string `json:"error"`
+	Status  int    `json:"status"`
+}
+
 func TestRegisterPhoneRequired(t *testing.T) {
 	RegisterRequest.Phone = ""
 	body := RegisterRequest
@@ -104,7 +110,11 @@ func TestRegisterPhoneRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "register"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
 }
 
 func TestRegisterUsernameRequired(t *testing.T) {
@@ -117,7 +127,12 @@ func TestRegisterUsernameRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "register"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestRegisterNameRequired(t *testing.T) {
@@ -130,7 +145,12 @@ func TestRegisterNameRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "register"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestRegisterFamilyRequired(t *testing.T) {
@@ -143,7 +163,12 @@ func TestRegisterFamilyRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "register"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 func TestRegisterAgeRequired(t *testing.T) {
 	RegisterRequest.Age = 0
@@ -155,7 +180,12 @@ func TestRegisterAgeRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "register"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 func TestRegisterPasswordRequired(t *testing.T) {
 	RegisterRequest.Password = ""
@@ -167,7 +197,12 @@ func TestRegisterPasswordRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "register"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestRegisterFailToBindReqBody(t *testing.T) {
@@ -183,7 +218,12 @@ func TestRegisterFailToBindReqBody(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "register"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestRegisterServiceReturnedError(t *testing.T) {
@@ -201,7 +241,12 @@ func TestRegisterServiceReturnedError(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "register"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestLoginServiceReturnedError(t *testing.T) {
@@ -217,9 +262,14 @@ func TestLoginServiceReturnedError(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/", rb)
 	rec := httptest.NewRecorder()
 	c := echo.New().NewContext(req, rec)
-	c.SetPath(fmt.Sprintf(v1prefix, "register"))
+	c.SetPath(fmt.Sprintf(v1prefix, "login"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestLoginFailToBindReqBody(t *testing.T) {
@@ -235,7 +285,12 @@ func TestLoginFailToBindReqBody(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "login"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestLoginPasswordRequired(t *testing.T) {
@@ -248,7 +303,12 @@ func TestLoginPasswordRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "login"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestLoginPhoneOrUsernameRequired(t *testing.T) {
@@ -261,7 +321,12 @@ func TestLoginPhoneOrUsernameRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "login"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestGetUserFailToBindReqBody(t *testing.T) {
@@ -277,7 +342,12 @@ func TestGetUserFailToBindReqBody(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "getUser"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestGetUserServiceReturnedError(t *testing.T) {
@@ -295,7 +365,12 @@ func TestGetUserServiceReturnedError(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "getUser"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestGetUserTokenRequired(t *testing.T) {
@@ -308,7 +383,12 @@ func TestGetUserTokenRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "getUser"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestGetUsersServiceReturnedError(t *testing.T) {
@@ -326,7 +406,12 @@ func TestGetUsersServiceReturnedError(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "admin/users"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 func TestGetUsersFailToBindReqBody(t *testing.T) {
 	body := struct {
@@ -341,7 +426,12 @@ func TestGetUsersFailToBindReqBody(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "admin/users"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestUpdateUserActiveStateFailToBindReqBody(t *testing.T) {
@@ -352,7 +442,12 @@ func TestUpdateUserActiveStateFailToBindReqBody(t *testing.T) {
 	c.SetParamNames("user_id")
 	c.SetParamValues("1")
 	err := UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestUpdateUserActiveStateServiceReturnedError(t *testing.T) {
@@ -372,7 +467,12 @@ func TestUpdateUserActiveStateServiceReturnedError(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "admin/toggleActive:user_id"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestUpdateUserActiveStateUserIdRequired(t *testing.T) {
@@ -384,7 +484,12 @@ func TestUpdateUserActiveStateUserIdRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "admin/toggleActive:user_id"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestUpdateUserBlockStateFailToBindReqBody(t *testing.T) {
@@ -395,7 +500,12 @@ func TestUpdateUserBlockStateFailToBindReqBody(t *testing.T) {
 	c.SetParamNames("user_id")
 	c.SetParamValues("1")
 	err := UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestUpdateUserBlockStateServiceReturnedError(t *testing.T) {
@@ -415,7 +525,12 @@ func TestUpdateUserBlockStateServiceReturnedError(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "admin/toggleBlock:user_id"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestUpdateUserBlockStateUserIdRequired(t *testing.T) {
@@ -427,7 +542,12 @@ func TestUpdateUserBlockStateUserIdRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "admin/toggleBlock:user_id"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestChangePasswordFailToBindReqBody(t *testing.T) {
@@ -441,7 +561,12 @@ func TestChangePasswordFailToBindReqBody(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "changePassword"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestChangePasswordServiceReturnedError(t *testing.T) {
@@ -463,7 +588,12 @@ func TestChangePasswordServiceReturnedError(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "changePassword"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestChangePasswordPhoneRequired(t *testing.T) {
@@ -479,7 +609,12 @@ func TestChangePasswordPhoneRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "changePassword"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestChangePasswordCodeRequired(t *testing.T) {
@@ -494,7 +629,12 @@ func TestChangePasswordCodeRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "changePassword"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestChangePasswordNewPasswordRequired(t *testing.T) {
@@ -509,7 +649,12 @@ func TestChangePasswordNewPasswordRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "changePassword"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 // verify user test
@@ -525,7 +670,12 @@ func TestVerifyUserFailToBindReqBody(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "verifyUser"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestVerifyUserServiceReturnedError(t *testing.T) {
@@ -546,7 +696,12 @@ func TestVerifyUserServiceReturnedError(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "verifyUser"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestVerifyUserPhoneRequired(t *testing.T) {
@@ -560,7 +715,12 @@ func TestVerifyUserPhoneRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "verifyUser"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 func TestVerifyUserCodeRequired(t *testing.T) {
@@ -574,7 +734,12 @@ func TestVerifyUserCodeRequired(t *testing.T) {
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "verifyUser"))
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
 // test update user
@@ -592,10 +757,15 @@ func TestUpdateUserFailToBindReqBody(t *testing.T) {
 	c.SetParamNames("user_id")
 	c.SetParamValues("1")
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
 
-func TestUpdateUsereReturnedError(t *testing.T) {
+func TestUpdateUserServiceReturnedError(t *testing.T) {
 	updateUserFunc = func(userId, token string, body domains.UpdateUserRequest) (*domains.PublicUser, rest_errors.RestErr) {
 		return nil, rest_errors.NewInternalServerError(errors.InternalServerErrorMessage, nil)
 	}
@@ -607,12 +777,18 @@ func TestUpdateUsereReturnedError(t *testing.T) {
 	}
 	j, err := json.Marshal(body)
 	rb := bytes.NewReader(j)
-	req := httptest.NewRequest(http.MethodPost, "/", rb)
+	req := httptest.NewRequest(http.MethodPatch, "/", rb)
 	rec := httptest.NewRecorder()
 	c := echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "updateUser:user_id"))
 	c.SetParamNames("user_id")
 	c.SetParamValues("1")
+	assert.EqualValues(t, http.MethodPatch, c.Request().Method)
 	err = UsersController.Register(c)
-	assert.NotNil(t, err)
+	var restErr RestErrStruct
+	assert.Nil(t, err)
+	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
+	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
 }
