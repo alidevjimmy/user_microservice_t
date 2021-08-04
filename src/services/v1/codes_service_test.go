@@ -2,17 +2,18 @@ package services
 
 import (
 	"fmt"
-	"github.com/alidevjimmy/go-rest-utils/rest_errors"
-	"github.com/alidevjimmy/user_microservice_t/domains/v1"
-	"github.com/alidevjimmy/user_microservice_t/errors/v1"
-	"github.com/alidevjimmy/user_microservice_t/repositories/postgres/v1"
-	"github.com/jarcoal/httpmock"
-	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 	"net/http"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/alidevjimmy/go-rest-utils/rest_errors"
+	"github.com/alidevjimmy/user_microservice_t/domains/v1"
+	"github.com/alidevjimmy/user_microservice_t/errors/v1"
+	repositories "github.com/alidevjimmy/user_microservice_t/repositories/postgres/v1"
+	"github.com/jarcoal/httpmock"
+	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 var (
@@ -32,8 +33,11 @@ func TestSendCodeFailToGetDataFromRepo(t *testing.T) {
 		return nil, rest_errors.NewInternalServerError(errors.InternalServerErrorMessage, nil)
 	}
 	repositories.UserRepository = &UserRespositoryMock{}
-
-	err := CodeService.Send(RegisterRequest.Phone, 0)
+	body := domains.SendCodeRequest{
+		Phone:  "0293123",
+		Reason: VERIFICATION,
+	}
+	err := CodeService.Send(body)
 	assert.NotNil(t, err)
 	assert.Equal(t, errors.InternalServerErrorMessage, err.Message())
 	assert.Equal(t, http.StatusInternalServerError, err.Status())
@@ -44,8 +48,11 @@ func TestSendCodeToUnExistsUser(t *testing.T) {
 		return nil, nil
 	}
 	repositories.UserRepository = &UserRespositoryMock{}
-
-	err := CodeService.Send(RegisterRequest.Phone, 0)
+	body := domains.SendCodeRequest{
+		Phone:  "0293123",
+		Reason: VERIFICATION,
+	}
+	err := CodeService.Send(body)
 	assert.NotNil(t, err)
 	assert.Equal(t, errors.UserNotFoundError, err.Message())
 	assert.Equal(t, http.NotFound, err.Status())
@@ -60,8 +67,11 @@ func TestSendCodeToActiveUser(t *testing.T) {
 		}, nil
 	}
 	repositories.UserRepository = &UserRespositoryMock{}
-
-	err := CodeService.Send(RegisterRequest.Phone, 0)
+	body := domains.SendCodeRequest{
+		Phone:  "0293123",
+		Reason: VERIFICATION,
+	}
+	err := CodeService.Send(body)
 	assert.NotNil(t, err)
 	assert.Equal(t, errors.UserAlreadyActiveErrorMessage, err.Message())
 	assert.Equal(t, http.StatusBadRequest, err.Status())
@@ -69,7 +79,11 @@ func TestSendCodeToActiveUser(t *testing.T) {
 
 func TestSendCodeReasonNotZeroOrOne(t *testing.T) {
 	reason := 2
-	err := CodeService.Send(RegisterRequest.Phone, reason)
+	body := domains.SendCodeRequest{
+		Phone:  "0293123",
+		Reason: reason,
+	}
+	err := CodeService.Send(body)
 	assert.NotNil(t, err)
 	assert.Equal(t, errors.InternalServerErrorMessage, err.Message())
 	assert.Equal(t, http.StatusInternalServerError, err.Status())
@@ -89,8 +103,11 @@ func TestFailToSendVerificationCode(t *testing.T) {
 			Active: false,
 		}, nil
 	}
-
-	err := CodeService.Send(RegisterRequest.Phone, 0)
+	body := domains.SendCodeRequest{
+		Phone:  "0293123",
+		Reason: VERIFICATION,
+	}
+	err := CodeService.Send(body)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, errors.InternalServerErrorMessage, err.Message())
@@ -111,8 +128,11 @@ func TestSendVerificationCodeSuccessfully(t *testing.T) {
 			Active: false,
 		}, nil
 	}
-
-	err := CodeService.Send(RegisterRequest.Phone, 0)
+	body := domains.SendCodeRequest{
+		Phone:  "0293123",
+		Reason: VERIFICATION,
+	}
+	err := CodeService.Send(body)
 	assert.Nil(t, err)
 }
 
@@ -130,8 +150,11 @@ func TestFailToSendForgetPasswordCode(t *testing.T) {
 			Active: false,
 		}, nil
 	}
-
-	err := CodeService.Send(RegisterRequest.Phone, 1)
+	body := domains.SendCodeRequest{
+		Phone:  "0293123",
+		Reason: RESETPASSWORD,
+	}
+	err := CodeService.Send(body)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, errors.InternalServerErrorMessage, err.Message())
@@ -152,8 +175,11 @@ func TestSendForgetPasswordCodeSuccessfully(t *testing.T) {
 			Active: false,
 		}, nil
 	}
-
-	err := CodeService.Send(RegisterRequest.Phone, 1)
+	body := domains.SendCodeRequest{
+		Phone:  "0293123",
+		Reason: RESETPASSWORD,
+	}
+	err := CodeService.Send(body)
 	assert.Nil(t, err)
 }
 
@@ -163,7 +189,7 @@ func TestVerifyCodeFailToGetDataFromRepo(t *testing.T) {
 	}
 	repositories.CodeRepository = &CodeRepoMock{}
 
-	ok, err := CodeService.Verify(RegisterRequest.Phone, 23233, 0)
+	ok, err := CodeService.Verify(RegisterRequest.Phone, 23233, VERIFICATION)
 	assert.NotNil(t, err)
 	assert.Equal(t, false, ok)
 	assert.Equal(t, errors.InternalServerErrorMessage, err.Message())
@@ -176,7 +202,7 @@ func TestVerifyCodeNotFound(t *testing.T) {
 	}
 	repositories.CodeRepository = &CodeRepoMock{}
 
-	ok, err := CodeService.Verify(RegisterRequest.Phone, 23233, 0)
+	ok, err := CodeService.Verify(RegisterRequest.Phone, 23233, VERIFICATION)
 	assert.NotNil(t, err)
 	assert.Equal(t, false, ok)
 	assert.Equal(t, errors.UserNotFoundError, err.Message())
@@ -189,12 +215,12 @@ func TestVerifyCodeSuccessfully(t *testing.T) {
 			Code:           2313123,
 			Phone:          "09231212",
 			CodeExpiration: time.Unix(0, time.Now().UnixNano()+10000),
-			CodePurpose:    0,
+			CodePurpose:    VERIFICATION,
 		}, nil
 	}
 	repositories.CodeRepository = &CodeRepoMock{}
 
-	ok, err := CodeService.Verify(RegisterRequest.Phone, 23233, 0)
+	ok, err := CodeService.Verify(RegisterRequest.Phone, 23233, VERIFICATION)
 	assert.Nil(t, err)
 	assert.Equal(t, true, ok)
 }
@@ -217,12 +243,12 @@ func TestVerificationCodeIsExpired(t *testing.T) {
 			Code:           2313123,
 			Phone:          "09231212",
 			CodeExpiration: time.Unix(0, time.Now().UnixNano()-10000),
-			CodePurpose:    0,
+			CodePurpose:    VERIFICATION,
 		}, nil
 	}
 	repositories.CodeRepository = &CodeRepoMock{}
 
-	ok, err := CodeService.Verify(RegisterRequest.Phone, 23233, 0)
+	ok, err := CodeService.Verify(RegisterRequest.Phone, 23233, VERIFICATION)
 
 	assert.Nil(t, err)
 	assert.Equal(t, false, ok)

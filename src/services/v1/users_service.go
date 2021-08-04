@@ -13,12 +13,12 @@ type userServiceInterface interface {
 	Register(body domains.RegisterRequest) (*domains.RegisterResponse, rest_errors.RestErr)
 	Login(body domains.LoginRequest) (*domains.LoginResponse, rest_errors.RestErr)
 	GetUser(token string) (*domains.PublicUser, rest_errors.RestErr)
-	GetUsers(params map[string]interface{}) ([]domains.PublicUser, rest_errors.RestErr)
+	GetUsers(params domains.GetUsersRequest) ([]domains.PublicUser, rest_errors.RestErr)
 	UpdateUserActiveState(userId uint) (*domains.PublicUser, rest_errors.RestErr)
 	UpdateUserBlockState(userId uint) (*domains.PublicUser, rest_errors.RestErr)
-	UpdateUser(token string, body domains.UpdateUserRequest) (*domains.PublicUser, rest_errors.RestErr)
-	ChangeForgotPassword(newPassword, phone string, code int) (*domains.PublicUser, rest_errors.RestErr)
-	ActiveUser(phone string, code int) (*domains.PublicUser, rest_errors.RestErr)
+	UpdateUser(userId, token string, body domains.UpdateUserRequest) (*domains.PublicUser, rest_errors.RestErr)
+	ChangeForgotPassword(body domains.ChangePasswordRequest) (*domains.PublicUser, rest_errors.RestErr)
+	VerifyUser(body domains.VerifyUserRequest) (*domains.PublicUser, rest_errors.RestErr)
 }
 
 type userService struct{}
@@ -37,7 +37,7 @@ func (*userService) GetUser(token string) (*domains.PublicUser, rest_errors.Rest
 }
 
 // GetUsers returns all users by filter
-func (*userService) GetUsers(params map[string]interface{}) ([]domains.PublicUser, rest_errors.RestErr) {
+func (*userService) GetUsers(params domains.GetUsersRequest) ([]domains.PublicUser, rest_errors.RestErr) {
 	return nil, nil
 }
 
@@ -51,18 +51,19 @@ func (*userService) UpdateUserBlockState(userId uint) (*domains.PublicUser, rest
 	return nil, nil
 }
 
-func (*userService) UpdateUser(token string, body domains.UpdateUserRequest) (*domains.PublicUser, rest_errors.RestErr) {
+func (*userService) UpdateUser(userId, token string, body domains.UpdateUserRequest) (*domains.PublicUser, rest_errors.RestErr) {
+	// check token.sub and userId are same
 	return nil, nil
 }
 
 // ChangeForgotPassword helps people who forgot their password using verification code
-func (*userService) ChangeForgotPassword(newPassword, phone string, code int) (*domains.PublicUser, rest_errors.RestErr) {
+func (*userService) ChangeForgotPassword(body domains.ChangePasswordRequest) (*domains.PublicUser, rest_errors.RestErr) {
 	// return token
 	return nil, nil
 }
 
 // ActiveUser Change user active state to true using verification code
-func (*userService) ActiveUser(phone string, code int) (*domains.PublicUser, rest_errors.RestErr) {
+func (*userService) VerifyUser(body domains.VerifyUserRequest) (*domains.PublicUser, rest_errors.RestErr) {
 	// return token
 	return nil, nil
 }

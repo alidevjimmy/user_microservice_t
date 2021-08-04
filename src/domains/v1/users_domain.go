@@ -53,15 +53,39 @@ type (
 	}
 
 	UpdateUserRequest struct {
-		Username string `json:"username" validate:"required"`
-		Name     string `json:"name" validate:"required"`
-		Family   string `json:"family" validate:"required"`
-		Age      uint   `json:"age" validate:"required"`
-		Password string `json:"password" validate:"required"`
+		Username string `json:"username"`
+		Name     string `json:"name"`
+		Family   string `json:"family"`
+		Age      uint   `json:"age"`
+		Password string `json:"password"`
 	}
 
 	GetUserRequest struct {
-		Token string `json:"token"`
+		Token string `json:"token" validate:"required"`
+	}
+
+	GetUsersRequest struct {
+		Active  bool `json:"active"`
+		Blocked bool `json:"blocked"`
+	}
+
+	UpdateActiveUserStateRequest struct {
+		UserID uint `json:"user_id" validate:"required"`
+	}
+
+	UpdateBlockUserStateRequest struct {
+		UserID uint `json:"user_id" validate:"required"`
+	}
+
+	ChangePasswordRequest struct {
+		Phone       string `json:"phone" validate:"required,max=12"`
+		Code        int    `json:"code"  validate:"required"`
+		NewPassword string `json:"new_password"  validate:"required, max=12"`
+	}
+
+	VerifyUserRequest struct {
+		Phone string `json:"phone" validate:"required,max=12"`
+		Code  int    `json:"code"  validate:"required"`
 	}
 )
 

@@ -34,7 +34,7 @@ func (*UserServiceMock) GetUser(token string) (*domains.PublicUser, rest_errors.
 }
 
 // GetUsers returns all users by filter
-func (*UserServiceMock) GetUsers(params map[string]interface{}) ([]domains.PublicUser, rest_errors.RestErr) {
+func (*UserServiceMock) GetUsers(params domains.GetUsersRequest) ([]domains.PublicUser, rest_errors.RestErr) {
 	return nil, nil
 }
 
@@ -48,18 +48,18 @@ func (*UserServiceMock) UpdateUserBlockState(userId uint) (*domains.PublicUser, 
 	return nil, nil
 }
 
-func (*UserServiceMock) UpdateUser(token string, body domains.UpdateUserRequest) (*domains.PublicUser, rest_errors.RestErr) {
+func (*UserServiceMock) UpdateUser(userId, token string, body domains.UpdateUserRequest) (*domains.PublicUser, rest_errors.RestErr) {
 	return nil, nil
 }
 
 // ChangeForgotPassword helps people who forgot their password using verification code
-func (*UserServiceMock) ChangeForgotPassword(newPassword, phone string, code int) (*domains.PublicUser, rest_errors.RestErr) {
+func (*UserServiceMock) ChangeForgotPassword(body domains.ChangePasswordRequest) (*domains.PublicUser, rest_errors.RestErr) {
 	// return token
 	return nil, nil
 }
 
 // ActiveUser Change user active state to true using verification code
-func (*UserServiceMock) ActiveUser(phone string, code int) (*domains.PublicUser, rest_errors.RestErr) {
+func (*UserServiceMock) VerifyUser(body domains.VerifyUserRequest) (*domains.PublicUser, rest_errors.RestErr) {
 	// return token
 	return nil, nil
 }

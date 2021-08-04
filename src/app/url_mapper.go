@@ -24,6 +24,6 @@ func urlMapper() {
 	// admin
 	e.Group(fmt.Sprintf(V1Prefix, "admin"), middlewares.OnlyAdmin)
 	e.GET(fmt.Sprintf(V1Prefix, "admin/users"), controllers.UsersController.GetUsers)
-	e.PATCH(fmt.Sprintf(V1Prefix, "admin/toggleActive:user_id"), controllers.UsersController.ActiveUser)
-	e.PATCH(fmt.Sprintf(V1Prefix, "admin/toggleBlock:user_id"), controllers.UsersController.BlockUser)
+	e.PATCH(fmt.Sprintf(V1Prefix, "admin/toggleActive:user_id"), controllers.UsersController.UpdateUserActiveState)
+	e.PATCH(fmt.Sprintf(V1Prefix, "admin/toggleBlock:user_id"), controllers.UsersController.UpdateUserBlockState)
 }
