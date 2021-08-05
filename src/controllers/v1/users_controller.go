@@ -40,7 +40,7 @@ func (*usersController) Register(c echo.Context) error {
 	if err != nil {
 		return c.JSON(err.Status(), err)
 	}
-	return c.JSON(200, user)
+	return c.JSON(http.StatusCreated, user)
 }
 
 func (*usersController) Login(c echo.Context) error {
@@ -57,7 +57,7 @@ func (*usersController) Login(c echo.Context) error {
 	if err != nil {
 		return c.JSON(err.Status(), err)
 	}
-	return c.JSON(200, user)
+	return c.JSON(http.StatusOK, user)
 }
 
 func (*usersController) GetUser(c echo.Context) error {
@@ -74,7 +74,7 @@ func (*usersController) GetUser(c echo.Context) error {
 	if err != nil {
 		return c.JSON(err.Status(), err)
 	}
-	return c.JSON(200, user)
+	return c.JSON(http.StatusOK, user)
 }
 
 func (*usersController) GetUsers(c echo.Context) error {
@@ -91,7 +91,7 @@ func (*usersController) GetUsers(c echo.Context) error {
 	if err != nil {
 		return c.JSON(err.Status(), err)
 	}
-	return c.JSON(200, user)
+	return c.JSON(http.StatusOK, user)
 }
 
 func (*usersController) UpdateUserActiveState(c echo.Context) error {
@@ -102,13 +102,13 @@ func (*usersController) UpdateUserActiveState(c echo.Context) error {
 	}
 	if err := c.Validate(rq); err != nil {
 		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
-		c.JSON(http.StatusBadRequest, er)
+		return c.JSON(http.StatusBadRequest, er)
 	}
 	user, err := services.UserService.UpdateUserActiveState(rq.UserID)
 	if err != nil {
 		return c.JSON(err.Status(), err)
 	}
-	return c.JSON(200, user)
+	return c.JSON(http.StatusOK, user)
 }
 
 func (*usersController) UpdateUserBlockState(c echo.Context) error {
@@ -119,13 +119,13 @@ func (*usersController) UpdateUserBlockState(c echo.Context) error {
 	}
 	if err := c.Validate(rq); err != nil {
 		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
-		c.JSON(http.StatusBadRequest, er)
+		return c.JSON(http.StatusBadRequest, er)
 	}
 	user, err := services.UserService.UpdateUserBlockState(rq.UserID)
 	if err != nil {
 		return c.JSON(err.Status(), err)
 	}
-	return c.JSON(200, user)
+	return c.JSON(http.StatusOK, user)
 }
 
 func (*usersController) UpdateUser(c echo.Context) error {
@@ -136,7 +136,7 @@ func (*usersController) UpdateUser(c echo.Context) error {
 	}
 	if err := c.Validate(rq); err != nil {
 		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
-		c.JSON(http.StatusBadRequest, er)
+		return c.JSON(http.StatusBadRequest, er)
 	}
 	token := c.QueryParam("token")
 	userID := c.Param("user_id")
@@ -144,7 +144,7 @@ func (*usersController) UpdateUser(c echo.Context) error {
 	if err != nil {
 		return c.JSON(err.Status(), err)
 	}
-	return c.JSON(200, user)
+	return c.JSON(http.StatusOK, user)
 }
 
 func (*usersController) ChangePassword(c echo.Context) error {
@@ -155,13 +155,13 @@ func (*usersController) ChangePassword(c echo.Context) error {
 	}
 	if err := c.Validate(rq); err != nil {
 		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
-		c.JSON(http.StatusBadRequest, er)
+		return c.JSON(http.StatusBadRequest, er)
 	}
 	user, err := services.UserService.ChangeForgotPassword(*rq)
 	if err != nil {
 		return c.JSON(err.Status(), err)
 	}
-	return c.JSON(200, user)
+	return c.JSON(http.StatusOK, user)
 }
 
 func (*usersController) Verify(c echo.Context) error {
@@ -172,11 +172,11 @@ func (*usersController) Verify(c echo.Context) error {
 	}
 	if err := c.Validate(rq); err != nil {
 		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
-		c.JSON(http.StatusBadRequest, er)
+		return c.JSON(http.StatusBadRequest, er)
 	}
 	user, err := services.UserService.VerifyUser(*rq)
 	if err != nil {
 		return c.JSON(err.Status(), err)
 	}
-	return c.JSON(200, user)
+	return c.JSON(http.StatusOK, user)
 }

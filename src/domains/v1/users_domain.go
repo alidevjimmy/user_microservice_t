@@ -31,12 +31,12 @@ type (
 	}
 
 	RegisterRequest struct {
-		Phone    string `json:"phone" validate:"required,max=12"`
-		Username string `json:"username" validate:"required,max=250"`
-		Name     string `json:"name" validate:"required,max=255"`
-		Family   string `json:"family" validate:"required,max=255"`
-		Age      uint   `json:"age" validate:"required,min=1"`
-		Password string `json:"password" validate:"required,max=300"`
+		Phone    string `json:"phone" validate:"required"`
+		Username string `json:"username" validate:"required"`
+		Name     string `json:"name" validate:"required"`
+		Family   string `json:"family" validate:"required"`
+		Age      uint   `json:"age" validate:"required"`
+		Password string `json:"password" validate:"required"`
 	}
 
 	LoginRequest struct {
