@@ -3,25 +3,12 @@ package repositories
 import (
 	"database/sql"
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/alidevjimmy/go-rest-utils/rest_errors"
-	"github.com/alidevjimmy/user_microservice_t/domains/v1"
 	"github.com/alidevjimmy/user_microservice_t/errors/v1"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"net/http"
 	"testing"
-)
-
-var (
-	FakeUser domains.PublicUser = domains.PublicUser{
-		ID: uint(1),
-		Phone:    "09122334344",
-		Username: "test_user",
-		Name:     "ali",
-		Family:   "hamrani",
-		Age:      uint(20),
-	}
 )
 
 type Suite struct {
@@ -65,13 +52,35 @@ func MockDbConnection(t *testing.T) *Suite {
 }
 
 func TestUserRepository_FailToGetUserById(t *testing.T) {
+	user := struct {
+		ID       uint
+		Phone    string
+		Username string
+		Active   bool
+		Blocked  bool
+		Name     string
+		Family   string
+		Age      uint
+		Password string
+	}{
+		ID:       uint(1),
+		Phone:    "0923123",
+		Active:   true,
+		Blocked:  false,
+		Name:     "name",
+		Family:   "family",
+		Username: "username",
+		Age:      uint(20),
+		Password: "password",
+	}
 	s := MockDbConnection(t)
 	s.mock.ExpectBegin()
-	s.mock.ExpectExec("SELECT * FROM users WHERE id=1").
-		WillReturnError(rest_errors.NewInternalServerError(errors.InternalServerErrorMessage, nil))
+	s.mock.ExpectExec("INSERT INTO users (id,phone,username,name,family,age,password,active,blocked) VALUES (?,?,?,?,?,?,?,?)").
+		WithArgs(user.ID, user.Phone, user.Username, user.Name, user.Family, user.Age, user.Password, user.Active, user.Blocked).
+		WillReturnResult(sqlmock.NewResult(int64(user.ID), 1))
 	s.mock.ExpectCommit()
 
-	up := NewUserRepository(s.db)
+	up := NewUserRepository(s.db, false)
 	u, err := up.GetUserByID(uint(1))
 	assert.NotNil(t, err)
 	assert.Nil(t, u)
@@ -80,13 +89,35 @@ func TestUserRepository_FailToGetUserById(t *testing.T) {
 }
 
 func TestUserRepository_GetUserByIdNotFoundShouldReturnNil(t *testing.T) {
+	user := struct {
+		ID       uint
+		Phone    string
+		Username string
+		Active   bool
+		Blocked  bool
+		Name     string
+		Family   string
+		Age      uint
+		Password string
+	}{
+		ID:       uint(1),
+		Phone:    "0923123",
+		Active:   true,
+		Blocked:  false,
+		Name:     "name",
+		Family:   "family",
+		Username: "username",
+		Age:      uint(20),
+		Password: "password",
+	}
 	s := MockDbConnection(t)
 	s.mock.ExpectBegin()
-	s.mock.ExpectQuery("SELECT * FROM users WHERE id=1").
-		WillReturnRows(sqlmock.NewRows([]string{"id","phone","username","name","family","age"}).AddRow())
+	s.mock.ExpectExec("INSERT INTO users (id,phone,username,name,family,age,password,active,blocked) VALUES (?,?,?,?,?,?,?,?)").
+		WithArgs(user.ID, user.Phone, user.Username, user.Name, user.Family, user.Age, user.Password, user.Active, user.Blocked).
+		WillReturnResult(sqlmock.NewResult(int64(user.ID), 1))
 	s.mock.ExpectCommit()
 
-	up := NewUserRepository(s.db)
+	up := NewUserRepository(s.db, false)
 	u, err := up.GetUserByID(uint(1))
 	assert.NotNil(t, err)
 	assert.Nil(t, u)
@@ -95,35 +126,77 @@ func TestUserRepository_GetUserByIdNotFoundShouldReturnNil(t *testing.T) {
 }
 
 func TestUserRepository_GetUserByID(t *testing.T) {
+	user := struct {
+		ID       uint
+		Phone    string
+		Username string
+		Active   bool
+		Blocked  bool
+		Name     string
+		Family   string
+		Age      uint
+		Password string
+	}{
+		ID:       uint(1),
+		Phone:    "0923123",
+		Active:   true,
+		Blocked:  false,
+		Name:     "name",
+		Family:   "family",
+		Username: "username",
+		Age:      uint(20),
+		Password: "password",
+	}
 	s := MockDbConnection(t)
 	s.mock.ExpectBegin()
-	s.mock.ExpectQuery("SELECT * FROM users WHERE id=1").
-		WillReturnRows(sqlmock.NewRows([]string{"id","phone","username","name","family","age"}).
-			AddRow(FakeUser.ID,FakeUser.Phone,FakeUser.Username,FakeUser.Name,FakeUser.Age,FakeUser.Age))
+	s.mock.ExpectExec("INSERT INTO users (id,phone,username,name,family,age,password,active,blocked) VALUES (?,?,?,?,?,?,?,?)").
+		WithArgs(user.ID, user.Phone, user.Username, user.Name, user.Family, user.Age, user.Password, user.Active, user.Blocked).
+		WillReturnResult(sqlmock.NewResult(int64(user.ID), 1))
 	s.mock.ExpectCommit()
 
-	up := NewUserRepository(s.db)
+	up := NewUserRepository(s.db, false)
 	u, err := up.GetUserByID(uint(1))
 	assert.NotNil(t, u)
 	assert.Nil(t, err)
-	assert.Equal(t, u.ID,FakeUser.ID)
-	assert.Equal(t, u.Phone,FakeUser.Phone)
-	assert.Equal(t, u.Username,FakeUser.Username)
-	assert.Equal(t, u.Name,FakeUser.Name)
-	assert.Equal(t, u.Family,FakeUser.Family)
-	assert.Equal(t, u.Age,FakeUser.Age)
+	assert.Equal(t, u.ID, user.ID)
+	assert.Equal(t, u.Phone, user.Phone)
+	assert.Equal(t, u.Username, user.Username)
+	assert.Equal(t, u.Name, user.Name)
+	assert.Equal(t, u.Family, user.Family)
+	assert.Equal(t, u.Age, user.Age)
 }
 
-
 func TestUserRepository_FailToGetUserByPhone(t *testing.T) {
+	user := struct {
+		ID       uint
+		Phone    string
+		Username string
+		Active   bool
+		Blocked  bool
+		Name     string
+		Family   string
+		Age      uint
+		Password string
+	}{
+		ID:       uint(1),
+		Phone:    "0923123",
+		Active:   true,
+		Blocked:  false,
+		Name:     "name",
+		Family:   "family",
+		Username: "username",
+		Age:      uint(20),
+		Password: "password",
+	}
 	s := MockDbConnection(t)
 	s.mock.ExpectBegin()
-	s.mock.ExpectQuery("SELECT * FROM users WHERE phone=$1").WithArgs(FakeUser.Phone).
-		WillReturnError(rest_errors.NewInternalServerError(errors.InternalServerErrorMessage, nil))
+	s.mock.ExpectExec("INSERT INTO users (id,phone,username,name,family,age,password,active,blocked) VALUES (?,?,?,?,?,?,?,?)").
+		WithArgs(user.ID, user.Phone, user.Username, user.Name, user.Family, user.Age, user.Password, user.Active, user.Blocked).
+		WillReturnResult(sqlmock.NewResult(int64(user.ID), 1))
 	s.mock.ExpectCommit()
 
-	up := NewUserRepository(s.db)
-	u, err := up.GetUserByPhone(FakeUser.Phone)
+	up := NewUserRepository(s.db, false)
+	u, err := up.GetUserByPhone(user.Phone)
 	assert.NotNil(t, err)
 	assert.Nil(t, u)
 	assert.Equal(t, http.StatusInternalServerError, err.Status())
@@ -131,14 +204,36 @@ func TestUserRepository_FailToGetUserByPhone(t *testing.T) {
 }
 
 func TestUserRepository_GetUserByPhoneNotFoundShouldReturnNil(t *testing.T) {
+	user := struct {
+		ID       uint
+		Phone    string
+		Username string
+		Active   bool
+		Blocked  bool
+		Name     string
+		Family   string
+		Age      uint
+		Password string
+	}{
+		ID:       uint(1),
+		Phone:    "0923123",
+		Active:   true,
+		Blocked:  false,
+		Name:     "name",
+		Family:   "family",
+		Username: "username",
+		Age:      uint(20),
+		Password: "password",
+	}
 	s := MockDbConnection(t)
 	s.mock.ExpectBegin()
-	s.mock.ExpectQuery("SELECT * FROM users WHERE phone=$1").WithArgs(FakeUser.Phone).
-		WillReturnRows(sqlmock.NewRows([]string{"id","phone","username","name","family","age"}).AddRow())
+	s.mock.ExpectExec("INSERT INTO users (id,phone,username,name,family,age,password,active,blocked) VALUES (?,?,?,?,?,?,?,?)").
+		WithArgs(user.ID, user.Phone, user.Username, user.Name, user.Family, user.Age, user.Password, user.Active, user.Blocked).
+		WillReturnResult(sqlmock.NewResult(int64(user.ID), 1))
 	s.mock.ExpectCommit()
 
-	up := NewUserRepository(s.db)
-	u, err := up.GetUserByPhone(FakeUser.Phone)
+	up := NewUserRepository(s.db, false)
+	u, err := up.GetUserByPhone(user.Phone)
 	assert.NotNil(t, err)
 	assert.Nil(t, u)
 	assert.Equal(t, http.NotFound, err.Status())
@@ -146,34 +241,77 @@ func TestUserRepository_GetUserByPhoneNotFoundShouldReturnNil(t *testing.T) {
 }
 
 func TestUserRepository_GetUserByPhone(t *testing.T) {
+	user := struct {
+		ID       uint
+		Phone    string
+		Username string
+		Active   bool
+		Blocked  bool
+		Name     string
+		Family   string
+		Age      uint
+		Password string
+	}{
+		ID:       uint(1),
+		Phone:    "0923123",
+		Active:   true,
+		Blocked:  false,
+		Name:     "name",
+		Family:   "family",
+		Username: "username",
+		Age:      uint(20),
+		Password: "password",
+	}
 	s := MockDbConnection(t)
 	s.mock.ExpectBegin()
-	s.mock.ExpectQuery("SELECT * FROM users WHERE phone=$1").WithArgs(FakeUser.Phone).
-		WillReturnRows(sqlmock.NewRows([]string{"id","phone","username","name","family","age"}).
-			AddRow(FakeUser.ID,FakeUser.Phone,FakeUser.Username,FakeUser.Name,FakeUser.Age,FakeUser.Age))
+	s.mock.ExpectExec("INSERT INTO users (id,phone,username,name,family,age,password,active,blocked) VALUES (?,?,?,?,?,?,?,?)").
+		WithArgs(user.ID, user.Phone, user.Username, user.Name, user.Family, user.Age, user.Password, user.Active, user.Blocked).
+		WillReturnResult(sqlmock.NewResult(int64(user.ID), 1))
 	s.mock.ExpectCommit()
 
-	up := NewUserRepository(s.db)
-	u, err := up.GetUserByPhone(FakeUser.Phone)
+	up := NewUserRepository(s.db, false)
+	u, err := up.GetUserByPhone(user.Phone)
 	assert.NotNil(t, u)
 	assert.Nil(t, err)
-	assert.Equal(t, u.ID,FakeUser.ID)
-	assert.Equal(t, u.Phone,FakeUser.Phone)
-	assert.Equal(t, u.Username,FakeUser.Username)
-	assert.Equal(t, u.Name,FakeUser.Name)
-	assert.Equal(t, u.Family,FakeUser.Family)
-	assert.Equal(t, u.Age,FakeUser.Age)
+	assert.Equal(t, u.ID, user.ID)
+	assert.Equal(t, u.Phone, user.Phone)
+	assert.Equal(t, u.Username, user.Username)
+	assert.Equal(t, u.Name, user.Name)
+	assert.Equal(t, u.Family, user.Family)
+	assert.Equal(t, u.Age, user.Age)
 }
 
 func TestUserRepository_FailToGetUserByUsername(t *testing.T) {
+	user := struct {
+		ID       uint
+		Phone    string
+		Username string
+		Active   bool
+		Blocked  bool
+		Name     string
+		Family   string
+		Age      uint
+		Password string
+	}{
+		ID:       uint(1),
+		Phone:    "0923123",
+		Active:   true,
+		Blocked:  false,
+		Name:     "name",
+		Family:   "family",
+		Username: "username",
+		Age:      uint(20),
+		Password: "password",
+	}
 	s := MockDbConnection(t)
 	s.mock.ExpectBegin()
-	s.mock.ExpectQuery("SELECT * FROM users WHERE username=$1").WithArgs(FakeUser.Username).
-		WillReturnError(rest_errors.NewInternalServerError(errors.InternalServerErrorMessage, nil))
+	s.mock.ExpectExec("INSERT INTO users (id,phone,username,name,family,age,password,active,blocked) VALUES (?,?,?,?,?,?,?,?)").
+		WithArgs(user.ID, user.Phone, user.Username, user.Name, user.Family, user.Age, user.Password, user.Active, user.Blocked).
+		WillReturnResult(sqlmock.NewResult(int64(user.ID), 1))
 	s.mock.ExpectCommit()
 
-	up := NewUserRepository(s.db)
-	u, err := up.GetUserByUsername(FakeUser.Username)
+	up := NewUserRepository(s.db, false)
+	u, err := up.GetUserByUsername(user.Username)
 	assert.NotNil(t, err)
 	assert.Nil(t, u)
 	assert.Equal(t, http.StatusInternalServerError, err.Status())
@@ -181,14 +319,36 @@ func TestUserRepository_FailToGetUserByUsername(t *testing.T) {
 }
 
 func TestUserRepository_GetUserByUsernameNotFoundShouldReturnNil(t *testing.T) {
+	user := struct {
+		ID       uint
+		Phone    string
+		Username string
+		Active   bool
+		Blocked  bool
+		Name     string
+		Family   string
+		Age      uint
+		Password string
+	}{
+		ID:       uint(1),
+		Phone:    "0923123",
+		Active:   true,
+		Blocked:  false,
+		Name:     "name",
+		Family:   "family",
+		Username: "username",
+		Age:      uint(20),
+		Password: "password",
+	}
 	s := MockDbConnection(t)
 	s.mock.ExpectBegin()
-	s.mock.ExpectQuery("SELECT * FROM users WHERE username=$1").WithArgs(FakeUser.Username).
-		WillReturnRows(sqlmock.NewRows([]string{"id","phone","username","name","family","age"}).AddRow())
+	s.mock.ExpectExec("INSERT INTO users (id,phone,username,name,family,age,password,active,blocked) VALUES (?,?,?,?,?,?,?,?)").
+		WithArgs(user.ID, user.Phone, user.Username, user.Name, user.Family, user.Age, user.Password, user.Active, user.Blocked).
+		WillReturnResult(sqlmock.NewResult(int64(user.ID), 1))
 	s.mock.ExpectCommit()
 
-	up := NewUserRepository(s.db)
-	u, err := up.GetUserByUsername(FakeUser.Username)
+	up := NewUserRepository(s.db, false)
+	u, err := up.GetUserByUsername(user.Username)
 	assert.NotNil(t, err)
 	assert.Nil(t, u)
 	assert.Equal(t, http.NotFound, err.Status())
@@ -196,34 +356,78 @@ func TestUserRepository_GetUserByUsernameNotFoundShouldReturnNil(t *testing.T) {
 }
 
 func TestUserRepository_GetUserByUsername(t *testing.T) {
+	user := struct {
+		ID       uint
+		Phone    string
+		Username string
+		Active   bool
+		Blocked  bool
+		Name     string
+		Family   string
+		Age      uint
+		Password string
+	}{
+		ID:       uint(1),
+		Phone:    "0923123",
+		Active:   true,
+		Blocked:  false,
+		Name:     "name",
+		Family:   "family",
+		Username: "username",
+		Age:      uint(20),
+		Password: "password",
+	}
 	s := MockDbConnection(t)
 	s.mock.ExpectBegin()
-	s.mock.ExpectQuery("SELECT * FROM users WHERE username=$1").WithArgs(FakeUser.Username).
-		WillReturnRows(sqlmock.NewRows([]string{"id","phone","username","name","family","age"}).
-			AddRow(FakeUser.ID,FakeUser.Phone,FakeUser.Username,FakeUser.Name,FakeUser.Age,FakeUser.Age))
+	s.mock.ExpectExec("INSERT INTO users (id,phone,username,name,family,age,password,active,blocked) VALUES (?,?,?,?,?,?,?,?)").
+		WithArgs(user.ID, user.Phone, user.Username, user.Name, user.Family, user.Age, user.Password, user.Active, user.Blocked).
+		WillReturnResult(sqlmock.NewResult(int64(user.ID), 1))
 	s.mock.ExpectCommit()
 
-	up := NewUserRepository(s.db)
-	u, err := up.GetUserByUsername(FakeUser.Username)
+	up := NewUserRepository(s.db, false)
+	u, err := up.GetUserByUsername(user.Username)
 	assert.NotNil(t, u)
 	assert.Nil(t, err)
-	assert.Equal(t, u.ID,FakeUser.ID)
-	assert.Equal(t, u.Phone,FakeUser.Phone)
-	assert.Equal(t, u.Username,FakeUser.Username)
-	assert.Equal(t, u.Name,FakeUser.Name)
-	assert.Equal(t, u.Family,FakeUser.Family)
-	assert.Equal(t, u.Age,FakeUser.Age)
+	assert.Equal(t, u.ID, user.ID)
+	assert.Equal(t, u.Phone, user.Phone)
+	assert.Equal(t, u.Username, user.Username)
+	assert.Equal(t, u.Name, user.Name)
+	assert.Equal(t, u.Family, user.Family)
+	assert.Equal(t, u.Age, user.Age)
 }
 
 func TestUserRepository_FailToGetUserByPhoneOrUsernameAndPassword(t *testing.T) {
+	user := struct {
+		ID       uint
+		Phone    string
+		Username string
+		Active   bool
+		Blocked  bool
+		Name     string
+		Family   string
+		Age      uint
+		Password string
+	}{
+		ID:       uint(1),
+		Phone:    "0923123",
+		Active:   true,
+		Blocked:  false,
+		Name:     "name",
+		Family:   "family",
+		Username: "username",
+		Age:      uint(20),
+		Password: "password",
+	}
+
 	s := MockDbConnection(t)
 	s.mock.ExpectBegin()
-	s.mock.ExpectQuery("SELECT * FROM users WHERE username=$1 OR phone=$2 AND password=$3").WithArgs(FakeUser.Username, FakeUser.Phone,"password").
-		WillReturnError(rest_errors.NewInternalServerError(errors.InternalServerErrorMessage, nil))
+	s.mock.ExpectExec("INSERT INTO users (id,phone,username,name,family,age,password,active,blocked) VALUES (?,?,?,?,?,?,?,?)").
+		WithArgs(user.ID, user.Phone, user.Username, user.Name, user.Family, user.Age, user.Password, user.Active, user.Blocked).
+		WillReturnResult(sqlmock.NewResult(int64(user.ID), 1))
 	s.mock.ExpectCommit()
 
-	up := NewUserRepository(s.db)
-	u, err := up.GetUserByPhoneOrUsernameAndPassword(FakeUser.Phone,"password")
+	up := NewUserRepository(s.db, false)
+	u, err := up.GetUserByPhoneOrUsernameAndPassword(user.Phone, "password")
 	assert.NotNil(t, err)
 	assert.Nil(t, u)
 	assert.Equal(t, http.StatusInternalServerError, err.Status())
@@ -231,14 +435,36 @@ func TestUserRepository_FailToGetUserByPhoneOrUsernameAndPassword(t *testing.T) 
 }
 
 func TestUserRepository_GetUserByPhoneOrUsernameAndPasswordNotFoundShouldReturnNil(t *testing.T) {
+	user := struct {
+		ID       uint
+		Phone    string
+		Username string
+		Active   bool
+		Blocked  bool
+		Name     string
+		Family   string
+		Age      uint
+		Password string
+	}{
+		ID:       uint(1),
+		Phone:    "0923123",
+		Active:   true,
+		Blocked:  false,
+		Name:     "name",
+		Family:   "family",
+		Username: "username",
+		Age:      uint(20),
+		Password: "password",
+	}
 	s := MockDbConnection(t)
 	s.mock.ExpectBegin()
-	s.mock.ExpectQuery("SELECT * FROM users WHERE username=$1 OR phone=$2 AND password=$3").WithArgs(FakeUser.Username, FakeUser.Phone,"password").
-		WillReturnRows(sqlmock.NewRows([]string{"id","phone","username","name","family","age"}).AddRow())
+	s.mock.ExpectExec("INSERT INTO users (id,phone,username,name,family,age,password,active,blocked) VALUES (?,?,?,?,?,?,?,?)").
+		WithArgs(user.ID, user.Phone, user.Username, user.Name, user.Family, user.Age, user.Password, user.Active, user.Blocked).
+		WillReturnResult(sqlmock.NewResult(int64(user.ID), 1))
 	s.mock.ExpectCommit()
 
-	up := NewUserRepository(s.db)
-	u, err := up.GetUserByPhoneOrUsernameAndPassword(FakeUser.Phone,"password")
+	up := NewUserRepository(s.db, false)
+	u, err := up.GetUserByPhoneOrUsernameAndPassword(user.Phone, "password")
 	assert.NotNil(t, err)
 	assert.Nil(t, u)
 	assert.Equal(t, http.NotFound, err.Status())
@@ -246,21 +472,90 @@ func TestUserRepository_GetUserByPhoneOrUsernameAndPasswordNotFoundShouldReturnN
 }
 
 func TestUserRepository_GetUserByPhoneOrUsernameAndPassword(t *testing.T) {
+	user := struct {
+		ID       uint
+		Phone    string
+		Username string
+		Active   bool
+		Blocked  bool
+		Name     string
+		Family   string
+		Age      uint
+		Password string
+	}{
+		ID:       uint(1),
+		Phone:    "0923123",
+		Active:   true,
+		Blocked:  false,
+		Name:     "name",
+		Family:   "family",
+		Username: "username",
+		Age:      uint(20),
+		Password: "password",
+	}
+
 	s := MockDbConnection(t)
 	s.mock.ExpectBegin()
-	s.mock.ExpectQuery("SELECT * FROM users WHERE username=$1 OR phone=$2 AND password=$3").WithArgs(FakeUser.Username, FakeUser.Phone,"password").
-		WillReturnRows(sqlmock.NewRows([]string{"id","phone","username","name","family","age"}).
-			AddRow(FakeUser.ID,FakeUser.Phone,FakeUser.Username,FakeUser.Name,FakeUser.Age,FakeUser.Age))
+	s.mock.ExpectExec("INSERT INTO users (id,phone,username,name,family,age,password,active,blocked) VALUES (?,?,?,?,?,?,?,?)").
+		WithArgs(user.ID, user.Phone, user.Username, user.Name, user.Family, user.Age, user.Password, user.Active, user.Blocked).
+		WillReturnResult(sqlmock.NewResult(int64(user.ID), 1))
 	s.mock.ExpectCommit()
 
-	up := NewUserRepository(s.db)
-	u, err := up.GetUserByPhoneOrUsernameAndPassword(FakeUser.Phone,"password")
+	up := NewUserRepository(s.db, false)
+	u, err := up.GetUserByPhoneOrUsernameAndPassword(user.Phone, "password")
 	assert.NotNil(t, u)
 	assert.Nil(t, err)
-	assert.Equal(t, u.ID,FakeUser.ID)
-	assert.Equal(t, u.Phone,FakeUser.Phone)
-	assert.Equal(t, u.Username,FakeUser.Username)
-	assert.Equal(t, u.Name,FakeUser.Name)
-	assert.Equal(t, u.Family,FakeUser.Family)
-	assert.Equal(t, u.Age,FakeUser.Age)
+	assert.Equal(t, u.ID, user.ID)
+	assert.Equal(t, u.Phone, user.Phone)
+	assert.Equal(t, u.Username, user.Username)
+	assert.Equal(t, u.Name, user.Name)
+	assert.Equal(t, u.Family, user.Family)
+	assert.Equal(t, u.Age, user.Age)
+}
+
+func TestUserRepository_GetUsers(t *testing.T) {
+	s := MockDbConnection(t)
+	users := []struct {
+		ID       uint
+		Phone    string
+		Username string
+		Active   bool
+		Blocked  bool
+		Name     string
+		Family   string
+		Age      uint
+		Password string
+	}{
+		{
+			ID:       uint(1),
+			Phone:    "0923123",
+			Active:   true,
+			Blocked:  false,
+			Name:     "name",
+			Family:   "family",
+			Username: "username",
+			Age:      uint(20),
+			Password: "password",
+		},
+		{
+			ID:       uint(2),
+			Phone:    "09123123",
+			Active:   true,
+			Blocked:  true,
+			Name:     "name1",
+			Family:   "family2",
+			Username: "username2",
+			Age:      uint(30),
+			Password: "password",
+		},
+	}
+
+	for _, user := range users {
+		s.mock.ExpectBegin()
+		s.mock.ExpectExec("INSERT INTO users (id,phone,username,name,family,age,password,active,blocked) VALUES (?,?,?,?,?,?,?,?)").
+			WithArgs(user.ID, user.Phone, user.Username, user.Name, user.Family, user.Age, user.Password, user.Active, user.Blocked).
+			WillReturnResult(sqlmock.NewResult(int64(user.ID), 1))
+		s.mock.ExpectCommit()
+	}
+
 }
