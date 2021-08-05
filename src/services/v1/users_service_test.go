@@ -31,7 +31,7 @@ var (
 	}
 	sendCodeFunc                            func(body domains.SendCodeRequest) rest_errors.RestErr
 	generateJwtFunc                         func(data jwt.MapClaims) (string, rest_errors.RestErr)
-	verifyJwtFunc                           func(token string) (*domains.Jwt, bool, rest_errors.RestErr)
+	verifyJwtFunc                           func(token string) (*domains.Jwt, rest_errors.RestErr)
 	getUserFunc                             func(id uint) (*domains.PublicUser, rest_errors.RestErr)
 	getUsersFunc                            func(params domains.GetUsersRequest) ([]domains.PublicUser, rest_errors.RestErr)
 	updateUserActiveStateByIdFunc           func(userId uint) (*domains.PublicUser, rest_errors.RestErr)
@@ -56,7 +56,7 @@ func (*JwtServiceMock) GenerateJwtToken(data jwt.MapClaims) (string, rest_errors
 	return generateJwtFunc(data)
 }
 
-func (*JwtServiceMock) VerifyJwtToken(token string) (*domains.Jwt, bool, rest_errors.RestErr) {
+func (*JwtServiceMock) VerifyJwtToken(token string) (*domains.Jwt, rest_errors.RestErr) {
 	return verifyJwtFunc(token)
 }
 
@@ -277,11 +277,11 @@ func TestGetUserFailToVerifyToken(t *testing.T) {
 }
 
 func TestGetUserFailToGetDataFromRepository(t *testing.T) {
-	verifyJwtFunc = func(token string) (*domains.Jwt, bool, rest_errors.RestErr) {
+	verifyJwtFunc = func(token string) (*domains.Jwt, rest_errors.RestErr) {
 		return &domains.Jwt{
 			Sub: "1",
 			Exp: time.Now().Add(time.Hour),
-		}, true, nil
+		}, nil
 	}
 	JwtService = &JwtServiceMock{}
 
@@ -299,11 +299,11 @@ func TestGetUserFailToGetDataFromRepository(t *testing.T) {
 }
 
 func TestGetUserNotFound(t *testing.T) {
-	verifyJwtFunc = func(token string) (*domains.Jwt, bool, rest_errors.RestErr) {
+	verifyJwtFunc = func(token string) (*domains.Jwt, rest_errors.RestErr) {
 		return &domains.Jwt{
 			Sub: "1",
 			Exp: time.Now().Add(time.Hour),
-		}, true, nil
+		}, nil
 	}
 	JwtService = &JwtServiceMock{}
 
@@ -321,11 +321,11 @@ func TestGetUserNotFound(t *testing.T) {
 }
 
 func TestGetUserSuccessfully(t *testing.T) {
-	verifyJwtFunc = func(token string) (*domains.Jwt, bool, rest_errors.RestErr) {
+	verifyJwtFunc = func(token string) (*domains.Jwt, rest_errors.RestErr) {
 		return &domains.Jwt{
 			Sub: "1",
 			Exp: time.Now().Add(time.Hour),
-		}, true, nil
+		}, nil
 	}
 
 	JwtService = &JwtServiceMock{}

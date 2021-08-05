@@ -13,8 +13,8 @@ var (
 )
 
 const (
-	VERIFICATION = iota
-	RESETPASSWORD
+	VERIFICATION = 1
+	RESETPASSWORD = 2
 )
 
 type codeServiceInterface interface {

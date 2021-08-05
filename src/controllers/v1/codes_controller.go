@@ -25,7 +25,8 @@ func (*codesController) SendCode(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, er)
 	}
 	if err := c.Validate(rq); err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		er := rest_errors.NewBadRequestError(errors.InvalidInputErrorMessage)
+		return c.JSON(http.StatusBadRequest, er)
 	}
 	err := services.CodeService.Send(*rq)
 	if err != nil {

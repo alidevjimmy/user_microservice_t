@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -30,31 +31,12 @@ func (*CodeServiceMock) Verify(phone string, code, reason int) (bool, rest_error
 	return false, nil
 }
 
-func TestSendCodeFailToBindReqBody(t *testing.T) {
-	body := domains.UpdateBlockUserStateRequest{
-		UserID: uint(1),
-	}
-	j, err := json.Marshal(body)
-	rb := bytes.NewReader(j)
-	req := httptest.NewRequest(http.MethodPost, "/", rb)
-	rec := httptest.NewRecorder()
-	c := echo.New().NewContext(req, rec)
-	c.SetPath(fmt.Sprintf(v1prefix, "sendCode"))
-	err = UsersController.Register(c)
-	var restErr RestErrStruct
-	assert.Nil(t, err)
-	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
-	assert.Nil(t, err)
-	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
-	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
-}
-
 func TestSendCodeServiceReturnedError(t *testing.T) {
 	sendCodeFunc = func(body domains.SendCodeRequest) rest_errors.RestErr {
 		return rest_errors.NewInternalServerError(errors.InternalServerErrorMessage, nil)
 	}
 
-	services.UserService = &UserServiceMock{}
+	services.CodeService = &CodeServiceMock{}
 
 	body := domains.SendCodeRequest{
 		Phone:  "09233",
@@ -63,16 +45,18 @@ func TestSendCodeServiceReturnedError(t *testing.T) {
 	j, err := json.Marshal(body)
 	rb := bytes.NewReader(j)
 	req := httptest.NewRequest(http.MethodPost, "/", rb)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
 	rec := httptest.NewRecorder()
-	c := echo.New().NewContext(req, rec)
+	c = echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "sendCode"))
-	err = UsersController.Register(c)
+	c.Echo().Validator = &Validator{validator: validator.New()}
+	err = CodesController.SendCode(c)
 	var restErr RestErrStruct
 	assert.Nil(t, err)
 	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
 	assert.Nil(t, err)
-	assert.EqualValues(t, http.StatusBadRequest, restErr.Status)
-	assert.EqualValues(t, errors.InvalidInputErrorMessage, restErr.Message)
+	assert.EqualValues(t, http.StatusInternalServerError, restErr.Status)
+	assert.EqualValues(t, errors.InternalServerErrorMessage, restErr.Message)
 }
 
 func TestSendCodePhoneRequired(t *testing.T) {
@@ -82,10 +66,12 @@ func TestSendCodePhoneRequired(t *testing.T) {
 	j, err := json.Marshal(body)
 	rb := bytes.NewReader(j)
 	req := httptest.NewRequest(http.MethodPost, "/", rb)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
 	rec := httptest.NewRecorder()
-	c := echo.New().NewContext(req, rec)
+	c = echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "sendCode"))
-	err = UsersController.Register(c)
+	c.Echo().Validator = &Validator{validator: validator.New()}
+	err = CodesController.SendCode(c)
 	var restErr RestErrStruct
 	assert.Nil(t, err)
 	err = json.Unmarshal(rec.Body.Bytes(), &restErr)
@@ -101,10 +87,12 @@ func TestSendCodeReasonRequired(t *testing.T) {
 	j, err := json.Marshal(body)
 	rb := bytes.NewReader(j)
 	req := httptest.NewRequest(http.MethodPost, "/", rb)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
 	rec := httptest.NewRecorder()
-	c := echo.New().NewContext(req, rec)
+	c = echo.New().NewContext(req, rec)
 	c.SetPath(fmt.Sprintf(v1prefix, "sendCode"))
-	err = UsersController.Register(c)
+	c.Echo().Validator = &Validator{validator: validator.New()}
+	err = CodesController.SendCode(c)
 	var restErr RestErrStruct
 	assert.Nil(t, err)
 	err = json.Unmarshal(rec.Body.Bytes(), &restErr)

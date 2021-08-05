@@ -10,7 +10,7 @@ type jwtService struct{}
 
 type jwtInterface interface {
 	GenerateJwtToken(data jwt.MapClaims) (string, rest_errors.RestErr)
-	VerifyJwtToken(token string) (*domains.Jwt, bool, rest_errors.RestErr)
+	VerifyJwtToken(token string) (*domains.Jwt, rest_errors.RestErr)
 }
 
 var (
@@ -22,6 +22,6 @@ func (*jwtService) GenerateJwtToken(data jwt.MapClaims) (string, rest_errors.Res
 	return "", nil
 }
 
-func (*jwtService) VerifyJwtToken(token string) (*domains.Jwt, bool, rest_errors.RestErr) {
-	return nil, false, nil
+func (*jwtService) VerifyJwtToken(token string) (*domains.Jwt, rest_errors.RestErr) {
+	return nil, nil
 }

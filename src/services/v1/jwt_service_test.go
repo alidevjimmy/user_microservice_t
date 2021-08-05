@@ -38,10 +38,9 @@ func TestGenerateJwtTokenSuccessfully(t *testing.T) {
 
 func TestVerifyJwtTokenFailToParseToken(t *testing.T) {
 	token := "iuu2hwjelkqme,mne,dmndw"
-	r, ok, err := JwtService.VerifyJwtToken(token)
+	r, err := JwtService.VerifyJwtToken(token)
 	assert.Nil(t, r)
 	assert.NotNil(t, err)
-	assert.Equal(t, false, ok)
 	assert.Equal(t, errors.InternalServerErrorMessage, err.Message())
 	assert.Equal(t, http.StatusInternalServerError, err.Status())
 }
@@ -55,11 +54,10 @@ func TestVerifyJwtTokenInvalidHashMethod(t *testing.T) {
 	tokenString, err := token.SignedString(Secret)
 	assert.Nil(t, err)
 
-	j, ok, err1 := JwtService.VerifyJwtToken(tokenString)
+	j, err1 := JwtService.VerifyJwtToken(tokenString)
 
 	assert.Nil(t, j)
 	assert.NotNil(t, err1)
-	assert.Equal(t, false, ok)
 	assert.Equal(t, errors.InternalServerErrorMessage, err1.Message())
 	assert.Equal(t, http.StatusInternalServerError, err1.Status())
 }
@@ -71,11 +69,10 @@ func TestVerifyJwtTokenInvalidClaim(t *testing.T) {
 	tokenString, err := token.SignedString(Secret)
 	assert.Nil(t, err)
 
-	j, ok, err1 := JwtService.VerifyJwtToken(tokenString)
+	j, err1 := JwtService.VerifyJwtToken(tokenString)
 
 	assert.Nil(t, j)
 	assert.NotNil(t, err1)
-	assert.Equal(t, false, ok)
 	assert.Equal(t, errors.InternalServerErrorMessage, err1.Message())
 	assert.Equal(t, http.StatusInternalServerError, err1.Status())
 }
@@ -87,11 +84,10 @@ func TestVerifyJwtTokenUnableToUnMarshal(t *testing.T) {
 	tokenString, err := token.SignedString(Secret)
 	assert.Nil(t, err)
 
-	j, ok, err1 := JwtService.VerifyJwtToken(tokenString)
+	j, err1 := JwtService.VerifyJwtToken(tokenString)
 
 	assert.Nil(t, j)
 	assert.NotNil(t, err1)
-	assert.Equal(t, false, ok)
 	assert.Equal(t, errors.InternalServerErrorMessage, err1.Message())
 	assert.Equal(t, http.StatusInternalServerError, err1.Status())
 }

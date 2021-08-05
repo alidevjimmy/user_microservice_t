@@ -16,8 +16,8 @@ type (
 	}
 
 	SendCodeRequest struct {
-		Phone  string `json:"phone"`
-		Reason int    `json:"reason"`
+		Phone  string `json:"phone" validate:"required"`
+		Reason int    `json:"reason" validate:"required"`
 	}
 )
 
